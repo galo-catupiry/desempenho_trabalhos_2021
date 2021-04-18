@@ -30,6 +30,7 @@ class jetstar():
         self.S = 542.5 * ft2_to_m2
         self.b = 53.75 * ft_to_m
         self.c_barra = 10.93 * ft_to_m
+        self.AR = self.b**2 / self.S
         
         #Power Approach Non-Dimensional Stability Derivatives
         if self.condition == 1:

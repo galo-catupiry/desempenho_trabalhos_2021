@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
 """
-Created on Sun Apr 18 13:48:23 2021
-
+T1 - SAA0183
+Grupo E
 """
 
 from aeronave import jetstar

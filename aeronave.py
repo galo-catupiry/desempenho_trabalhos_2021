@@ -34,31 +34,31 @@ class jetstar():
         #Power Approach Non-Dimensional Stability Derivatives
         if self.condition == 1:
             self.alpha_zero = 6.5 * deg_to_rad
-            self.v_t0 = 132.5 * kt_to_ms
+            self.V_t0 = 132.5 * kt_to_ms
             
             #Longitudinal
-            self.cl = 0.737
-            self.cd = 0.95
-            self.cl_alpha = 5.0
-            self.cd_alpha = .75 
-            self.cm_alpha = -.80
-            self.cm_alpha_dot = -.30
-            self.cm_q = -8.0
-            self.cl_delta_e = .4 
-            self.cm_delta_e = -.81
+            self.CL = 0.737
+            self.CD = 0.95
+            self.CL_alpha = 5.0
+            self.CD_alpha = .75 
+            self.Cm_alpha = -.80
+            self.Cm_alpha_dot = -.30
+            self.Cm_q = -8.0
+            self.CL_delta_e = .4 
+            self.Cm_delta_e = -.81
             
             #Lateral-Directional
-            self.cy_beta = -.72 
-            self.cn_beta = .137
-            self.cl_beta = -.103
-            self.cl_p = -.37
-            self.cn_p = -.14
-            self.cl_r = .11
-            self.cn_r = -.16
-            self.cn_delta_a = -.0075
-            self.cl_delta_a = .054
-            self.cy_delta_r = .175
-            self.cn_delta_r = -.063
-            self.cl_delta_r = .029
+            self.Cy_beta = -.72 
+            self.Cn_beta = .137
+            self.Cl_beta = -.103
+            self.Cl_p = -.37
+            self.Cn_p = -.14
+            self.Cl_r = .11
+            self.Cn_r = -.16
+            self.Cn_delta_a = -.0075
+            self.Cl_delta_a = .054
+            self.Cy_delta_r = .175
+            self.Cn_delta_r = -.063
+            self.Cl_delta_r = .029
             
         

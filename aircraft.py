@@ -22,7 +22,7 @@ class jetstar():
         self.condition = condition
         
         #Fixed features
-        self.W = 382204 * lb_to_kg
+        self.W = 38204 * lb_to_kg
         self.Ix = 118773  * slug_ft2_to_kg_m2
         self.Iy = 135869 * slug_ft2_to_kg_m2
         self.Iz = 243504 * slug_ft2_to_kg_m2
@@ -39,11 +39,11 @@ class jetstar():
             
             #Longitudinal
             self.CL = 0.737
-            self.CD = 0.95
+            self.CD = 0.095
             self.CL_alpha = 5.0
             self.CD_alpha = .75 
             self.Cm_alpha = -.80
-            self.Cm_alpha_dot = -.30
+            self.Cm_alpha_dot = -3.0
             self.Cm_q = -8.0
             self.CL_delta_e = .4 
             self.Cm_delta_e = -.81

@@ -27,10 +27,13 @@ class jetstar():
         self.Iy = 135869 * slug_ft2_to_kg_m2
         self.Iz = 243504 * slug_ft2_to_kg_m2
         self.Ixz = 5061 * slug_ft2_to_kg_m2
-        self.S = 542.5 * ft2_to_m2
-        self.b = 53.75 * ft_to_m
-        self.c_barra = 10.93 * ft_to_m
-        self.AR = self.b**2 / self.S
+        self.S = 542.5 * ft2_to_m2 #wing area
+        self.b = 53.75 * ft_to_m #wing span
+        self.c_barra = 10.93 * ft_to_m 
+        self.AR = self.b**2 / self.S #aspct ratio
+        self.WL = self.W / self.S #wing loading
+        self.e = 0.7 #oswald number
+        self.K = (3.1415 * self.e * self.AR)**-1 #induced  drag factor
         
         #Power Approach Non-Dimensional Stability Derivatives
         if self.condition == 1:

@@ -1,10 +1,13 @@
-# -*- coding: utf-8 -*-
 """
-Created on Sat Apr 24 15:48:47 2021
-
+T1 - SAA0183
+Grupo E
 """
 
 # Bibliotecas:
+import os, sys
+current_dir = os.path.dirname(os.path.realpath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
     
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,7 +17,7 @@ from mpl_toolkits import mplot3d
 
 # Planilhas:
 
-xlsx = pd.ExcelFile('C:\\Users\Administrador\Documents\GitHub\desempenho_trabalhos_2021\Planilhas\Dados - JetStar.xlsx')
+xlsx = pd.ExcelFile(parent_dir + '\Planilhas\Dados - JetStar.xlsx')
 CL_mach = pd.read_excel(xlsx, 'CL_mach')
 CD_mach = pd.read_excel(xlsx, 'CD_mach')
 
@@ -49,15 +52,15 @@ Mp  = np.linspace(0.1,0.9,20)
 
 # Gráfico:
     
-fig = plt.figure()
-ax = plt.axes(projection="3d")
-CLp, Mp = np.meshgrid(CLp, Mp)
-resp = polar(param,CLp,Mp)
-ax.plot_surface(CLp,Mp, resp, rstride=1, cstride=1,
-                cmap='viridis', edgecolor='none')
-ax.scatter3D(CL_exp,M_exp, CD_exp,c = M_exp ,cmap='flag',alpha=1)
-ax.set_title("Polar de arrasto")
-ax.set_xlabel("CL")
-ax.set_ylabel("M")
-ax.set_zlabel("CD")
-plt.show()
+# fig = plt.figure()
+# ax = plt.axes(projection="3d")
+# CLp, Mp = np.meshgrid(CLp, Mp)
+# resp = polar(param,CLp,Mp)
+# ax.plot_surface(CLp,Mp, resp, rstride=1, cstride=1,
+#                 cmap='viridis', edgecolor='none')
+# ax.scatter3D(CL_exp,M_exp, CD_exp,c = M_exp ,cmap='flag',alpha=1)
+# ax.set_title("Polar de arrasto")
+# ax.set_xlabel("CL")
+# ax.set_ylabel("M")
+# ax.set_zlabel("CD")
+# plt.show()

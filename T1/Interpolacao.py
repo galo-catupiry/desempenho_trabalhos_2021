@@ -53,23 +53,20 @@ param = np.array(param[0])
 
 # Dados de entrada:
     
-CLp = np.linspace(0.5,1.2,20)
-Mp  = 0.6
+CLp = np.linspace(0.1,1.2,20)
+Mp  = 0.4
 
 [resp, CD_0,K] = polar(param,CLp,Mp)
-
-print("Para 0.5 < CL < 1.2: \n CD_0 = {} \n K = {}".format(CD_0,K)) 
-
 
 # ----------------------------- GRÁFICOS ------------------------------------#
 
 # Superfície 3D: Mach variável
-'''    
+'''
 fig = plt.figure()
 ax = plt.axes(projection="3d")
 CLp, Mp = np.meshgrid(CLp, Mp)
-resp = polar(param,CLp,Mp)
-ax.plot_surface(CLp,Mp, resp, rstride=1, cstride=1,
+resp_graf = polar(param,CLp,Mp)[0]
+ax.plot_surface(CLp,Mp, resp_graf, rstride=1, cstride=1,
                 cmap='viridis', edgecolor='none')
 ax.scatter3D(CL_exp,M_exp, CD_exp,c = M_exp ,cmap='flag',alpha=1)
 ax.set_title("Polar de arrasto")
@@ -80,11 +77,11 @@ plt.show()
 '''
 
 # Curva CL x CD: Mach fixo
-'''    
+''' 
 fig = plt.figure()
-resp_2d = polar(param,CLp,Mp)
-plt.plot(CLp,resp_2d, label = "Sem o termo CL^1")
-plt.legend(loc = 'best', framealpha = 1)
+resp_2d = polar(param,CLp,Mp)[0]
+plt.plot(CLp,resp_2d)
+#plt.legend(loc = 'best', framealpha = 1)
 plt.xlabel("CL")
 plt.ylabel("CD")
 plt.grid(True)

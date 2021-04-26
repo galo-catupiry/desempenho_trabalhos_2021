@@ -20,7 +20,7 @@ from Utilities.isa_atmosphere import atmo_isa as ISA
 
 
 
-#%%
+#%% Dados Gerais
 
 jet = jetstar(1)
 
@@ -66,22 +66,7 @@ def hdot_v_graph():
     plt.ylabel("$\dot{h}$", fontsize = 14)
     plt.show()
         
-        
-        
-        
     
-    
-
-
-
-
-    
-    
-    
-
-
-
-
 beta = 9296
 sigma = lambda h: np.exp((-h/beta))
 
@@ -89,37 +74,84 @@ sigma = lambda h: np.exp((-h/beta))
 h2 = altitude # [m]
 h1 = 0 # [m]
 
+#%% Alcance e Autonomia com CL constante
 
+#%%% Alcance e Autonomia
 
-#%% Alcance
+#Alcance
+def range_CL(h1, h2, CL):
+    E = CL #alguma funcao com CL
+    deltaX_CL = E * (h2 - h1)
+    
+    return deltaX_CL
 
-#%%%  CL constante
+#Autonomia
+def endurance_CL(h1,h2,CL):
+    #formula 7.24
+    E = CL #alguma funcao com CL
+    rho_ssl = ISA(2) #conferir isso
+    expo = np.e**(-h1/(2*beta)) - np.e**(-h2/(2*beta))
+    t_CL = (2 * beta* E * (rho_ssl * CL/(2*jet.WL))**.5) * expo
+    
+    return t_CL
 
-
-
-
-
-#%%% V constante
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#%% Autonomia
-
-#%%%  CL constante
+#%%% Melhot Alcance e melhor Autonomia
 
 
 
-#%%% V constante
+
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#%% Alcance e Autonomia com V constante
+
+#%%%  Alcance e Autonomia
+
+#Alcance
+def range_V(h1, h2, V):
+    #formula 7.20
+    rho_ssl = 0
+    CD0 = 0
+    K = 0
+    A = (rho_ssl * CD0 * V**2)/(2 * jet.WL)
+    B = (2 * K * jet.WL)/(rho_ssl * V**2)
+    tan1 = np.arctan(B**-1 * A * np.e**(-h1/beta))
+    tan2 = np.arctan(B**-1 * A * np.e**(-h2/beta))
+    
+    deltaX_V = (beta / B) * (tan1 - tan2)
+    
+    return deltaX_V
+
+#Autonomia
+def endurance_V(h1, h2, V):
+    rho_ssl = 1
+    V = 1
+    CD0 = 0
+    K = 0
+    
+    a = (CD0 * rho_ssl**2 * np.e**(-h1/beta))/(4*K * jet.WL**2)
+    b = (CD0 * rho_ssl**2 * np.e**(-h2/beta))/(4*K * jet.WL**2)
+    
+    arc_tan = np.arctan(((a-b)*(V**4)) / (1 + a*b*(V**8))
+                        
+    tv = ((beta*rho_ssl* V)/(2*K * jet.WL)) * arc_tan
+    
+    
+    
+#%%% Melhor Alcance e Autonomia 
+    

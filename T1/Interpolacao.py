@@ -17,7 +17,7 @@ from mpl_toolkits import mplot3d
 
 # Planilhas:
 
-xlsx = pd.ExcelFile(parent_dir + '\Planilhas\Dados - JetStar.xlsx')
+xlsx = pd.ExcelFile(parent_dir + '/Planilhas/Dados-JetStar.xlsx')
 CL_mach = pd.read_excel(xlsx, 'CL_mach')
 CD_mach = pd.read_excel(xlsx, 'CD_mach')
 
@@ -77,7 +77,7 @@ plt.show()
 '''
 
 # Curva CL x CD: Mach fixo
-''' 
+'''
 fig = plt.figure()
 resp_2d = polar(param,CLp,Mp)[0]
 plt.plot(CLp,resp_2d)

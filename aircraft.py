@@ -23,7 +23,7 @@ kt_to_ms = 0.51444
 
 class JetStar():
 
-    def __init__(self, condition, xlsx):
+    def __init__(self, condition, **xlsx):
         self.xlsx = xlsx
         self.condition = condition
         

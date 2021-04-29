@@ -28,7 +28,9 @@ class JetStar():
         self.condition = condition
         
         # Fixed features
-        self.W = 38204 * lb_to_kg
+        
+        self.P = 38204 * lb_to_kg
+        self.W = self.P * 9.81
         self.Ix = 118773  * slug_ft2_to_kg_m2
         self.Iy = 135869 * slug_ft2_to_kg_m2
         self.Iz = 243504 * slug_ft2_to_kg_m2
@@ -41,8 +43,8 @@ class JetStar():
         self.c_root = 4.44
         self.AR = self.b**2 / self.S #aspct ratio
         self.WL = self.W / self.S #wing loading
-        self.e = 0.7 #oswald number
-        self.K = (3.1415 * self.e * self.AR)**-1 #induced  drag factor
+        # self.e = 0.7 #oswald number
+        # self.K = (3.1415 * self.e * self.AR)**-1 #induced  drag factor
         self.lambd = self.c_tip/self.c_root
         self.sweep = deg2rad(28.7) #sweep back
         # tailpane

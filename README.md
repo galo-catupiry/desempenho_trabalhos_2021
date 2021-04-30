@@ -5,4 +5,5 @@ Repositório para os trabalhos da disciplina de Desempenho SAA0183
 - Alessandro Melo de Oliveira 10788662
 - Guilherme Beppu de Souza 10696681
 - Abner Micael de Paula Souza 10788676
+- Thiago Buchignani De Amicis 10277418
 

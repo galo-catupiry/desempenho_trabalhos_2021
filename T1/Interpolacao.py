@@ -58,7 +58,7 @@ Mp  = np.linspace(0.05,1,20)
 
 [resp, CD_0,K] = polar(param,CL_exp,M_exp)
 
-print("     CD_exp - CD_previsto \n {}".format(abs(CD_exp-resp)))
+#print("     CD_exp - CD_previsto \n {}".format(abs(CD_exp-resp)))
 
 # ----------------------------- GRÁFICOS ------------------------------------#
 

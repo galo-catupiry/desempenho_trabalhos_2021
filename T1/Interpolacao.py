@@ -53,10 +53,12 @@ param = np.array(param[0])
 
 # Dados de entrada:
     
-CLp = np.linspace(0.1,1.2,20)
-Mp  = 0.4
+CLp = np.linspace(0.05,1,20)
+Mp  = np.linspace(0.05,1,20)
 
-[resp, CD_0,K] = polar(param,CLp,Mp)
+[resp, CD_0,K] = polar(param,CL_exp,M_exp)
+
+print("     CD_exp - CD_previsto \n {}".format(abs(CD_exp-resp)))
 
 # ----------------------------- GRÁFICOS ------------------------------------#
 
@@ -66,13 +68,14 @@ fig = plt.figure()
 ax = plt.axes(projection="3d")
 CLp, Mp = np.meshgrid(CLp, Mp)
 resp_graf = polar(param,CLp,Mp)[0]
-ax.plot_surface(CLp,Mp, resp_graf, rstride=1, cstride=1,
-                cmap='viridis', edgecolor='none')
-ax.scatter3D(CL_exp,M_exp, CD_exp,c = M_exp ,cmap='flag',alpha=1)
-ax.set_title("Polar de arrasto")
+ax.plot_surface(Mp,CLp, resp_graf, rstride=1, cstride=1,
+                cmap='viridis', edgecolor='none', alpha = 0.9)
+ax.scatter3D(M_exp,CL_exp, CD_exp,c = 'red',alpha=1)
+#ax.set_title("Polar de arrasto")
 ax.set_xlabel("CL")
 ax.set_ylabel("M")
 ax.set_zlabel("CD")
+plt.savefig("polar_arrasto.svg")
 plt.show()
 '''
 

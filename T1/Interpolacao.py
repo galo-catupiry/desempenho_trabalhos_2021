@@ -1,6 +1,11 @@
 """
-T1 - SAA0183
-Grupo E
+Cálculo dos parâmetros aerodinâmicos
+
+Integrantes:
+    Abner Micael de Paula Souza - 10788676
+    Alessandro Melo de Oliveira - 10788662
+    Guilherme Beppu de Souza    - 10696681
+    Thiago Buchignani De Amicis - 10277418
 """
 
 # Bibliotecas:

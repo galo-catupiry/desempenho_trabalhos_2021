@@ -80,6 +80,7 @@ def alcance_autonomia_CL(altitude, V, graph = False, save_graph = False):
     if graph == True:
         
         fig_CL = plt.figure(figsize=(10,7))
+        plt.subplots_adjust(wspace = 0.2, hspace = 0.2)
         
         #Eficiencia pela altitude
         fig_E = fig_CL.add_subplot(121)
@@ -170,6 +171,7 @@ def alcance_autonomia_V(altitude, V, graph = False, save_graph = False):
     if graph == True:
         
         fig_V= plt.figure(figsize=(10,7))
+        plt.subplots_adjust(wspace = 0.2, hspace = 0.2)
         
         
         #Eficiencia pela altitude

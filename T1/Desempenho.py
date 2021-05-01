@@ -80,7 +80,7 @@ def alcance_autonomia_CL(altitude, V, graph = False, save_graph = False):
     if graph == True:
         
         fig_CL = plt.figure(figsize=(10,7))
-        plt.subplots_adjust(wspace = 0.2, hspace = 0.2)
+        plt.subplots_adjust(wspace = 0.3, hspace = 0.4)
         
         #Eficiencia pela altitude
         fig_E = fig_CL.add_subplot(121)
@@ -106,13 +106,6 @@ def alcance_autonomia_CL(altitude, V, graph = False, save_graph = False):
         plt.show()
         
     return deltaX_CL, t_CL
-
-
-
-
-
-
-
 
 
 #%%% Melhot Alcance e melhor Autonomia
@@ -171,7 +164,7 @@ def alcance_autonomia_V(altitude, V, graph = False, save_graph = False):
     if graph == True:
         
         fig_V= plt.figure(figsize=(10,7))
-        plt.subplots_adjust(wspace = 0.2, hspace = 0.2)
+        plt.subplots_adjust(wspace = 0.3, hspace = 0.4)
         
         
         #Eficiencia pela altitude
@@ -188,7 +181,7 @@ def alcance_autonomia_V(altitude, V, graph = False, save_graph = False):
         plt.plot(range_h, CL_list, label = "CL")
         plt.grid()
         plt.xlabel("Altitude [m]", fontsize = 12)
-        plt.ylabel("Velocidade [m/s] ", fontsize = 12)
+        plt.ylabel("$C_L$", fontsize = 12)
         ax = plt.gca()
         ax.invert_xaxis()
         

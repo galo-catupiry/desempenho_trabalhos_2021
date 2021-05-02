@@ -61,6 +61,7 @@ def alcance_autonomia_CL(altitude, V,
         rho_i = ISA(h)[3]
         velo_som_i = ISA(h)[2]
         V_i = (jet.W / (0.5 * CL * rho_i * jet.S))**.5
+                
         mach_i = V_i / velo_som_i
         
         CL_i = CL #mantendo o CL igual o CL inicial
@@ -86,7 +87,7 @@ def alcance_autonomia_CL(altitude, V,
         
     if graph_E_V == True:
         
-        fig_CL = plt.figure(figsize=(10,7))
+        fig_CL= plt.figure(figsize=(10,4))
         plt.subplots_adjust(wspace = 0.3, hspace = 0.4)
         
         #Eficiencia pela altitude
@@ -115,15 +116,12 @@ def alcance_autonomia_CL(altitude, V,
     
     if graph_h_V == True:
         
-        # h_dot_min = min(abs())
         
-        
-        fig_h_v = plt.figure(figsize=(10,5))
+        fig_h_v = plt.figure(figsize=(10,4))
         plt.plot(V_list, hdot_list)
         plt.grid()
         plt.xlabel("Velocidade [m/s]", fontsize = 12)
         plt.ylabel("Razão de descida $\dot{h}$", fontsize = 12)
-        plt.title("Diagrama $\dot{h} \\times V$", fontsize = 14)
         
         if save_graph_h_V == True:
             plt.savefig("h_V.pdf")
@@ -187,7 +185,7 @@ def alcance_autonomia_V(altitude, V, graph = False, save_graph = False):
         
     if graph == True:
         
-        fig_V= plt.figure(figsize=(10,7))
+        fig_V= plt.figure(figsize=(10,4))
         plt.subplots_adjust(wspace = 0.3, hspace = 0.4)
         
         

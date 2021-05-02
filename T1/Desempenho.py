@@ -35,7 +35,9 @@ sigma = lambda h: np.exp((-h/beta))
 #%%% Alcance e Autonomia
 
 #Alcance
-def alcance_autonomia_CL(altitude, V, graph = False, save_graph = False):
+def alcance_autonomia_CL(altitude, V, 
+                         graph_E_V = False, save_graph_E_V = False,
+                         graph_h_V = False, save_graph_h_V = False):
     
     ## Considerando velocidade e altitude de cruzeiro
     h1 = 0 # [m]
@@ -52,17 +54,21 @@ def alcance_autonomia_CL(altitude, V, graph = False, save_graph = False):
     t_CL = 0
     E_list = []
     V_list = []
+    hdot_list = []
     
     for h in range_h:
         
         rho_i = ISA(h)[3]
         velo_som_i = ISA(h)[2]
         V_i = (jet.W / (0.5 * CL * rho_i * jet.S))**.5
+                
         mach_i = V_i / velo_som_i
         
         CL_i = CL #mantendo o CL igual o CL inicial
         CD_i = polar(param, CL_i, mach_i)[0]
         E_i = CL_i / CD_i
+        gamma_i = - 1 / E_i
+        hdot_i = V_i * np.sin(gamma_i)
                 
         #Alcance
         deltaX_CL_i = E_i * range_dh # E * [h(i+1) - h(i)]
@@ -70,6 +76,8 @@ def alcance_autonomia_CL(altitude, V, graph = False, save_graph = False):
         
         E_list.append(E_i)
         V_list.append(V_i)
+        hdot_list.append(hdot_i)
+        
         
         
         #Autonomia
@@ -77,9 +85,9 @@ def alcance_autonomia_CL(altitude, V, graph = False, save_graph = False):
         t_CL_i = 2*beta*E_i * (((rho0 * CL_i)/(2 * jet.WL))**.5) * exp_t
         t_CL += t_CL_i
         
-    if graph == True:
+    if graph_E_V == True:
         
-        fig_CL = plt.figure(figsize=(10,7))
+        fig_CL= plt.figure(figsize=(10,4))
         plt.subplots_adjust(wspace = 0.3, hspace = 0.4)
         
         #Eficiencia pela altitude
@@ -100,15 +108,29 @@ def alcance_autonomia_CL(altitude, V, graph = False, save_graph = False):
         ax = plt.gca()
         ax.invert_xaxis()
         
-        if save_graph == True:
+        if save_graph_E_V == True:
             plt.savefig("alcance_autonomia_CL.pdf")
         
         plt.show()
         
+    
+    if graph_h_V == True:
+        
+        
+        fig_h_v = plt.figure(figsize=(10,4))
+        plt.plot(V_list, hdot_list)
+        plt.grid()
+        plt.xlabel("Velocidade [m/s]", fontsize = 12)
+        plt.ylabel("Razão de descida $\dot{h}$", fontsize = 12)
+        
+        if save_graph_h_V == True:
+            plt.savefig("h_V.pdf")
+        plt.show()
+    
     return deltaX_CL, t_CL
 
 
-#%%% Melhot Alcance e melhor Autonomia
+#%%% Melhor Alcance e melhor Autonomia
 
 
 
@@ -163,7 +185,7 @@ def alcance_autonomia_V(altitude, V, graph = False, save_graph = False):
         
     if graph == True:
         
-        fig_V= plt.figure(figsize=(10,7))
+        fig_V= plt.figure(figsize=(10,4))
         plt.subplots_adjust(wspace = 0.3, hspace = 0.4)
         
         
@@ -189,6 +211,16 @@ def alcance_autonomia_V(altitude, V, graph = False, save_graph = False):
             plt.savefig("alcance_autonomia_V.pdf")
         
         plt.show()
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     return deltaX_V, t_V
 

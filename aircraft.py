@@ -2,7 +2,6 @@
 Parametros geometricos e aerodinamicos da aeronave Lockheed JetStar
 Codigo referente ao primeiro trabalho da disciplina SAA0183 - Desempenho
 de Aeronaves (1o sem 2021)
-
 Integrantes:
     Abner Micael de Paula Souza - 10788676
     Alessandro Melo de Oliveira - 10788662
@@ -23,7 +22,7 @@ kt_to_ms = 0.51444
 
 class JetStar():
 
-    def __init__(self, condition, **xlsx):
+    def __init__(self, condition, xlsx=None):
         self.xlsx = xlsx
         self.condition = condition
         
@@ -61,18 +60,20 @@ class JetStar():
         # cg
         self.x_cg = self.x_w
         self.z_cg = self.z_w
-        
-        # velocity
-        self.V_t0 = 132.5 * kt_to_ms
+
         
         # downwash
         Kh = (1 - abs(self.z_t/self.b))/pow(2*(self.x_t-self.x_w)/self.b,1/3)
         Klambda = (10 - 3*self.lambd)/7
         Kar = 1/self.AR - 1/(1+pow(self.AR,1.7))
         self.dEdalpha = 4.44*pow(Kh*Klambda*Kar*sqrt(cos(self.sweep/4)),1.19)
+
+        # Cruise conditions
+        self.V_cruise = 225.278 # m/s
+        self.h_cruise = 43000 * ft_to_m
         
         # Power Approach Non-Dimensional Stability Derivatives
-        if self.condition == 1:
+        if self.condition == 'power approach':
             self.alpha_zero = 6.5 * deg_to_rad
             self.V_t0 = 132.5 * kt_to_ms
             
@@ -103,6 +104,8 @@ class JetStar():
             
             
     def read_aerodynamic_data(self):
+        if self.xlsx == None:
+            return None
         self.alpha_zero_mach = pd.read_excel(self.xlsx,'alpha_zero_mach')
         self.CL_mach = pd.read_excel(self.xlsx, 'CL_mach')
         self.CD_mach = pd.read_excel(self.xlsx, 'CD_mach')
@@ -115,3 +118,8 @@ class JetStar():
         self.CM_M_mach = pd.read_excel(self.xlsx,'CM_M_mach')
         self.CL_delta_e = pd.read_excel(self.xlsx,'CL_delta_e')
         self.Cm_delta_e = pd.read_excel(self.xlsx,'Cm_delta_e')
+        
+    def read_stability_data(self):
+        if self.xlsx == None:
+            return None
+        self.stability_data = pd.read_excel(self.xlsx,'stability')

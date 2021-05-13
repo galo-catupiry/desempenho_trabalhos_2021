@@ -14,8 +14,8 @@ sys.path.append(parent_dir)
 
 from Desempenho import alcance_autonomia_CL, alcance_autonomia_V
 
-altitude = 13105 # [m]
-velocidade = 811 / 3.6 # [m/s]
+altitude = 4000 # [m]
+velocidade = 400 / 3.6 # [m/s]
 
 print("----- Alcance e Autonomia [Caso CL constante] -----")
 deltaX_CL, t_CL = alcance_autonomia_CL(altitude, velocidade, True, False, False, False)

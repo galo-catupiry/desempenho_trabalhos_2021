@@ -17,38 +17,34 @@ sys.path.append(parent_dir)
 
 import numpy as np
 import matplotlib.pyplot as plt
-
+from ambiance import Atmosphere
 from Interpolacao import polar, param
 from aircraft import JetStar
-from Utilities.isa_atmosphere import atmo_isa as ISA
+
 
 #%% Dados Gerais
 
 jet = JetStar(1)
+sealevel = Atmosphere(0)
 
 beta = 9296
-rho0 = ISA(0)[3] #densidade ao nível do mar
-sigma = lambda h: np.exp((-h/beta))
+rho0 = sealevel.density[0]
 
 #%% Alcance e Autonomia com CL constante
-
-#%%% Alcance e Autonomia
-
-#Alcance
 def alcance_autonomia_CL(altitude, V, 
                          graph_E_V = False, save_graph_E_V = False,
                          graph_h_V = False, save_graph_h_V = False):
     
-    ## Considerando velocidade e altitude de cruzeiro
     h1 = 0 # [m]
     h2 = altitude # [m]
     
-    rho = ISA(h2)[3] #[ kg/m^3]
+    rho = Atmosphere(h2).density[0]
     
     CL = jet.W / (0.5 * jet.S * (V**2) * rho) #esse cl é mantido constante
     
-    range_h = np.linspace(h2,h1,10000)
-    range_dh = range_h[0] - range_h[1] # da um dh próximo de 13.11 m
+    h_linspace = np.linspace(h2,h1,1000, retstep = True)
+    range_h = h_linspace[0]
+    range_dh = abs(h_linspace[1])
     
     deltaX_CL = 0
     t_CL = 0
@@ -58,8 +54,8 @@ def alcance_autonomia_CL(altitude, V,
     
     for h in range_h:
         
-        rho_i = ISA(h)[3]
-        velo_som_i = ISA(h)[2]
+        rho_i = Atmosphere(h).density[0]
+        velo_som_i = Atmosphere(h).speed_of_sound[0]
         V_i = (jet.W / (0.5 * CL * rho_i * jet.S))**.5
                 
         mach_i = V_i / velo_som_i
@@ -77,7 +73,6 @@ def alcance_autonomia_CL(altitude, V,
         E_list.append(E_i)
         V_list.append(V_i)
         hdot_list.append(hdot_i)
-        
         
         
         #Autonomia
@@ -130,26 +125,20 @@ def alcance_autonomia_CL(altitude, V,
     return deltaX_CL, t_CL
 
 
-#%%% Melhor Alcance e melhor Autonomia
-
-
-
 #%% Alcance e Autonomia com V constante
-
-#%%%  Alcance e Autonomia
-
-#Alcance
 def alcance_autonomia_V(altitude, V, graph = False, save_graph = False):
     
     ## Considerando velocidade e altitude de cruzeiro
     h1 = 0 # [m]
     h2 = altitude # [m]
 
-    velo_som = ISA(h2)[2] # [m/s]
+    #velo_som = ISA(h2)[2] # [m/s]
+    velo_som = Atmosphere(h2).speed_of_sound[0]
     mach_cru = V / velo_som
     
-    range_h = np.linspace(h2,h1,10000)
-    range_dh = range_h[0] - range_h[1] # da um dh próximo de 13.11 m
+    h_linspace = np.linspace(h2,h1,1000, retstep = True) 
+    range_h = h_linspace[0]
+    range_dh = abs(h_linspace[1])
     
     deltaX_V = 0
     t_V = 0
@@ -158,7 +147,7 @@ def alcance_autonomia_V(altitude, V, graph = False, save_graph = False):
     
     for h in range_h:
         
-        rho_i = ISA(h)[3]
+        rho_i = Atmosphere(h).density[0]
         CL_i = (2 * jet.WL)/(rho_i * V**2)
         CD_i = polar(param, CL_i, mach_cru)[0]
         E_i = CL_i / CD_i
@@ -211,18 +200,5 @@ def alcance_autonomia_V(altitude, V, graph = False, save_graph = False):
             plt.savefig("alcance_autonomia_V.pdf")
         
         plt.show()
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+        
     return deltaX_V, t_V
-
-#%%% Melhor Alcance e Autonomia 
-    

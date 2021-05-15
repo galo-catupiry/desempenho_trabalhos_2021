@@ -80,7 +80,7 @@ print(f'CM_zero = {round(CM_zero,4)}')
 #%% plots  
 deltas = [-10,-5,0,5,10] # graus
 alphas = np.linspace(-5,12) # graus
-machs = [0.25,0.4,0.5,0.6,0.8]
+machs = [0.2,0.4,0.5,0.6,0.8]
 CMcgs = []
 CLs = []
 cores = list(pl.cm.jet(np.linspace(0,1,len(deltas))))
@@ -123,18 +123,22 @@ ax.set_xlabel('$AoA_{trim}$ [deg]')
 ax.set_ylabel('CL')
 ax.legend()
 
-
-# CL x alpha x Mach
+# CL x alpha x Mach e CD x alpha x Mach
+from Interpolacao import polar,param
 alpha_Lzero = -CL_zero/CL_alpha
-fig,ax = plt.subplots(figsize=(8,4))
-ax.grid()
+fig,ax = plt.subplots(1,2,figsize=(12,4))
+ax[0].grid(); ax[1].grid()
 for i in range(len(machs)):
     cl_alphai = np.interp(machs[i],aircraft.CL_alpha_mach['mach'],
                           aircraft.CL_alpha_mach['CL_alpha'])
-    plt.plot(alphas,cl_alphai*np.deg2rad(alphas-alpha_Lzero),
-             color=cores[i],label=f'Mach = {machs[i]}')
-ax.set_xlabel('AoA [deg]')
-ax.set_ylabel('CL')
-ax.legend()
+    cl_i = cl_alphai*np.deg2rad(alphas-alpha_Lzero)
+    cd_i = polar(param,cl_i,machs[i])[0]
+    ax[0].plot(alphas,cl_i,color=cores[i],label=f'Mach = {machs[i]}')
+    ax[1].plot(alphas,cd_i,color=cores[i],label=f'Mach = {machs[i]}')
+ax[0].set_xlabel('AoA [deg]')
+ax[1].set_xlabel('AoA [deg]')
+ax[0].set_ylabel('CL')
+ax[1].set_ylabel('CD')
+ax[0].legend()
 plt.tight_layout()
-#plt.savefig('CL_mach.eps')
+#plt.savefig('polares_mach_alpha.eps')

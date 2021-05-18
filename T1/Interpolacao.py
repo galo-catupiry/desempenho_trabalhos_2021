@@ -34,26 +34,52 @@ M_exp  = CL_mach.iloc[:,0]
      
 # Funções:
 
-def func_residuo(p):
+class drag_polar():
     
-    R = (p[0] + p[1]*CL_exp**2)*(p[2] + p[3]*M_exp + p[4]*M_exp**2) - CD_exp
+    def __init__(self,CL_exp, CD_exp, M_exp, CLp, Mp):
+        
+        self.CL_exp = CL_exp
+        self.CD_exp = CD_exp
+        self.M_exp = M_exp
+        
+        self.CLp = CLp
+        self.Mp = Mp
     
-    return R
+        return
 
-def polar(x, CLp, Mp):
+    def func_residuo(self, p):
     
-    CL = CLp
-    M  = Mp
-    resp = (x[0] + x[1]*CL**2)*(x[2] + x[3]*M + x[4]*M**2)
+        self.R = (p[0] + p[1]*self.CL_exp**2)*(p[2] + p[3]*self.M_exp + p[4]*self.M_exp**2) - self.CD_exp
     
-    CD_0 = x[0]*(x[2] + x[3]*M + x[4]*M**2)
-    K = x[1]*(x[2] + x[3]*M + x[4]*M**2)
+        return self.R
     
-    return resp, CD_0,K
+    def params(self):
+        
+        self.param = 0.1*np.ones(5)
+        self.param = leastsq(self.func_residuo,self.param)
+        self.param = np.array(self.param[0])
+        
+        return self.param
 
-param = 0.1*np.ones(5)
-param = leastsq(func_residuo,param)
-param = np.array(param[0])
+    def polar(self,x):
+    
+        self.CL = self.CLp
+        self.M  = self.Mp
+        self.resp = (x[0] + x[1]*self.CL**2)*(x[2] + x[3]*self.M + x[4]*self.M**2)
+        
+        self.CD_0 = x[0]*(x[2] + x[3]*self.M + x[4]*self.M**2)
+        self.K = x[1]*(x[2] + x[3]*self.M + x[4]*self.M**2)
+    
+        return self.resp, self.CD_0, self.K
+    
+    def extra(self,x):  # Extração apenas de CDO e K 
+        
+        self.CD_0_e = x[0]*(x[2] + x[3]*self.M + x[4]*self.M**2)
+        self.K_e = x[1]*(x[2] + x[3]*self.M + x[4]*self.M**2)
+        
+        return self.CD_0_e, self.K_e
+
+
 
 
 # Dados de entrada:
@@ -61,9 +87,15 @@ param = np.array(param[0])
 CLp = np.linspace(0.05,1,20)
 Mp  = np.linspace(0.05,1,20)
 
-[resp, CD_0,K] = polar(param,CL_exp,M_exp)
+# Polar de arrasto:
+problem = drag_polar(CL_exp, CD_exp, M_exp, CLp, Mp)
+params = problem.params()
+[resp, CD_0, K] = problem.polar(params)
 
-#print("     CD_exp - CD_previsto \n {}".format(abs(CD_exp-resp)))
+# Extração de CD0 e K, apenas:
+[CD_0_e,K_e] = problem.extra(params)
+
+
 
 # ----------------------------- GRÁFICOS ------------------------------------#
 
@@ -72,7 +104,11 @@ Mp  = np.linspace(0.05,1,20)
 fig = plt.figure()
 ax = plt.axes(projection="3d")
 CLp, Mp = np.meshgrid(CLp, Mp)
-resp_graf = polar(param,CLp,Mp)[0]
+
+plot = drag_polar(CL_exp, CD_exp, M_exp, CLp, Mp)
+params_plot = plot.params()
+resp_graf = plot.polar(params_plot)[0]
+
 ax.plot_surface(Mp,CLp, resp_graf, rstride=1, cstride=1,
                 cmap='viridis', edgecolor='none', alpha = 0.9)
 ax.scatter3D(M_exp,CL_exp, CD_exp,c = 'red',alpha=1)
@@ -80,15 +116,15 @@ ax.scatter3D(M_exp,CL_exp, CD_exp,c = 'red',alpha=1)
 ax.set_xlabel("CL")
 ax.set_ylabel("M")
 ax.set_zlabel("CD")
-plt.savefig("polar_arrasto.svg")
+#plt.savefig("polar_arrasto.svg")
 plt.show()
 '''
 
 # Curva CL x CD: Mach fixo
 '''
 fig = plt.figure()
-resp_2d = polar(param,CLp,Mp)[0]
-plt.plot(CLp,resp_2d)
+#resp_2d = polar(params,CLp,Mp)[0]
+plt.plot(CLp,resp)
 #plt.legend(loc = 'best', framealpha = 1)
 plt.xlabel("CL")
 plt.ylabel("CD")

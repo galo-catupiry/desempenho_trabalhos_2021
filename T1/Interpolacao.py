@@ -28,15 +28,15 @@ CD_mach = pd.read_excel(xlsx, 'CD_mach')
 
 # Dados experimentais:
 
-CL_exp = CL_mach.iloc[:,1]
-CD_exp = CD_mach.iloc[:,1]
-M_exp  = CL_mach.iloc[:,0]
+CL_expe = CL_mach.iloc[:,1]
+CD_expe = CD_mach.iloc[:,1]
+M_expe  = CL_mach.iloc[:,0]
      
 # Funções:
 
 class drag_polar():
     
-    def __init__(self,CL_exp, CD_exp, M_exp, CLp, Mp):
+    def __init__(self,CLp, Mp, CL_exp = CL_expe, CD_exp = CD_expe, M_exp = M_expe):
         
         self.CL_exp = CL_exp
         self.CD_exp = CD_exp
@@ -87,13 +87,13 @@ class drag_polar():
 CLp = np.linspace(0.05,1,20)
 Mp  = np.linspace(0.05,1,20)
 
-# Polar de arrasto:
-problem = drag_polar(CL_exp, CD_exp, M_exp, CLp, Mp)
-params = problem.params()
-[resp, CD_0, K] = problem.polar(params)
+# # Polar de arrasto:
+# problem = drag_polar(CL_exp, CD_exp, M_exp, CLp, Mp)
+# params = problem.params()
+# [resp, CD_0, K] = problem.polar(params)
 
-# Extração de CD0 e K, apenas:
-[CD_0_e,K_e] = problem.extra(params)
+# # Extração de CD0 e K, apenas:
+# [CD_0_e,K_e] = problem.extra(params)
 
 
 

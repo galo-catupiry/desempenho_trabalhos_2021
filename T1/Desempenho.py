@@ -18,22 +18,31 @@ sys.path.append(parent_dir)
 import numpy as np
 import matplotlib.pyplot as plt
 from ambiance import Atmosphere
-from Interpolacao import polar, param
+from Interpolacao import drag_polar, CLp, Mp
 from aircraft import JetStar
+from datetime import datetime
 
 
 #%% Dados Gerais
 
 jet = JetStar(1)
-sealevel = Atmosphere(0)
 
+drag02 = drag_polar(0.2, 0.5)
+params02 = drag02.params()
+
+
+drag03 = drag_polar(0.3, 0.5)
+params03 = drag03.params()
+
+
+
+sealevel = Atmosphere(0)
 beta = 9296
 rho0 = sealevel.density[0]
 
 #%% Alcance e Autonomia com CL constante
 def alcance_autonomia_CL(altitude, V, 
-                         graph_E_V = False, save_graph_E_V = False,
-                         graph_h_V = False, save_graph_h_V = False):
+                         graph_E_V = False, save_graph_E_V = False):
     
     h1 = 0 # [m]
     h2 = altitude # [m]
@@ -42,7 +51,7 @@ def alcance_autonomia_CL(altitude, V,
     
     CL = jet.W / (0.5 * jet.S * (V**2) * rho) #esse cl é mantido constante
     
-    h_linspace = np.linspace(h2,h1,1000, retstep = True)
+    h_linspace = np.linspace(h2,h1,400, retstep = True)
     range_h = h_linspace[0]
     range_dh = abs(h_linspace[1])
     
@@ -61,7 +70,9 @@ def alcance_autonomia_CL(altitude, V,
         mach_i = V_i / velo_som_i
         
         CL_i = CL #mantendo o CL igual o CL inicial
-        CD_i = polar(param, CL_i, mach_i)[0]
+        drag_i = drag_polar(CL_i, mach_i)
+        params_i = drag_i.params()
+        CD_i = drag_i.polar(params_i)[0]
         E_i = CL_i / CD_i
         gamma_i = - 1 / E_i
         hdot_i = V_i * np.sin(gamma_i)
@@ -107,20 +118,6 @@ def alcance_autonomia_CL(altitude, V,
             plt.savefig("alcance_autonomia_CL.pdf")
         
         plt.show()
-        
-    
-    if graph_h_V == True:
-        
-        
-        fig_h_v = plt.figure(figsize=(10,4))
-        plt.plot(V_list, hdot_list)
-        plt.grid()
-        plt.xlabel("Velocidade [m/s]", fontsize = 12)
-        plt.ylabel("Razão de descida $\dot{h}$", fontsize = 12)
-        
-        if save_graph_h_V == True:
-            plt.savefig("h_V.pdf")
-        plt.show()
     
     return deltaX_CL, t_CL
 
@@ -136,7 +133,11 @@ def alcance_autonomia_V(altitude, V, graph = False, save_graph = False):
     velo_som = Atmosphere(h2).speed_of_sound[0]
     mach_cru = V / velo_som
     
-    h_linspace = np.linspace(h2,h1,1000, retstep = True) 
+    drag_generico = drag_polar(0.5, 0.5)
+    params_generico = drag_generico.params()
+    [CD0, K] = drag_generico.extra(params_generico)
+    
+    h_linspace = np.linspace(h2,h1,400, retstep = True) 
     range_h = h_linspace[0]
     range_dh = abs(h_linspace[1])
     
@@ -148,14 +149,18 @@ def alcance_autonomia_V(altitude, V, graph = False, save_graph = False):
     for h in range_h:
         
         rho_i = Atmosphere(h).density[0]
-        CL_i = (2 * jet.WL)/(rho_i * V**2)
-        CD_i = polar(param, CL_i, mach_cru)[0]
-        E_i = CL_i / CD_i
-        CD0_i = polar(param, CL_i, mach_cru)[1]
-        K_i = polar(param, CL_i, mach_cru)[2]
+        velo_som_i = Atmosphere(h).speed_of_sound[0]
+        mach_i = V/velo_som_i
         
-        A_i = (rho0 * CD0_i * V**2)/(2 * jet.WL)
-        B_i = (2 * K_i * jet.WL)/(rho0 * V**2)
+        CL_i = (2 * jet.WL)/(rho_i * V**2)
+        drag_i = drag_polar(CL_i, mach_i)
+        params_i = drag_i.params()
+        CD_i = drag_i.polar(params_i)[0]
+        E_i = CL_i / CD_i
+        
+        
+        A_i = (rho0 * CD0 * V**2)/(2 * jet.WL)
+        B_i = (2 * K * jet.WL)/(rho0 * V**2)
         
         tan1_i = np.arctan(B_i**-1 * A_i * np.e**(-(h - range_dh)/beta))
         tan2_i = np.arctan(B_i**-1 * A_i * np.e**(-h/beta))
@@ -201,4 +206,27 @@ def alcance_autonomia_V(altitude, V, graph = False, save_graph = False):
         
         plt.show()
         
-    return deltaX_V, t_V
+    return deltaX_V, 
+
+
+#%% ------ MAIN -------
+
+start = datetime.now()
+
+altitude = 13105 # [m]
+velocidade = 811 / 3.6 # [m/s]
+
+# print("----- Alcance e Autonomia [Caso CL constante] -----")
+# deltaX_CL, t_CL = alcance_autonomia_CL(altitude, velocidade, False, False)
+# print("Delta_X = {} [m]".format(round(deltaX_CL,2)))
+# print("t = {} [s]".format(round(t_CL,2)))
+
+
+
+
+print("----- Alcance e autonomia [Caso V constante] -----")
+deltaX_V, t_V = alcance_autonomia_V(altitude, velocidade, False, False)
+print("Delta_X = {} [m]".format(round(deltaX_V,2)))
+print("t = {} [s]".format(round(t_V,2)))
+
+print(datetime.now() - start)

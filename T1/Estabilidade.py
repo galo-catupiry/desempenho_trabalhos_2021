@@ -99,7 +99,7 @@ ax.legend()
 plt.xlabel('AoA (deg)')
 plt.ylabel('CMcg')
 plt.tight_layout()
-#plt.savefig('CMcg_alpha.eps')
+plt.savefig('CMcg_alpha.eps')
 
 # CL
 fig,ax = plt.subplots(figsize=(6,4))
@@ -111,7 +111,7 @@ ax.legend()
 plt.xlabel('CL')
 plt.ylabel('CMcg')
 plt.tight_layout()
-#plt.savefig('CMcg_CL.eps')    
+plt.savefig('CMcg_CL.eps')    
 
 # CL vs alpha
 fig,ax = plt.subplots()
@@ -124,15 +124,19 @@ ax.set_ylabel('CL')
 ax.legend()
 
 # CL x alpha x Mach e CD x alpha x Mach
-from Interpolacao import polar,param
+from Interpolacao import DragPolar
 alpha_Lzero = -CL_zero/CL_alpha
 fig,ax = plt.subplots(1,2,figsize=(12,4))
 ax[0].grid(); ax[1].grid()
+drag = DragPolar()
+
 for i in range(len(machs)):
     cl_alphai = np.interp(machs[i],aircraft.CL_alpha_mach['mach'],
                           aircraft.CL_alpha_mach['CL_alpha'])
     cl_i = cl_alphai*np.deg2rad(alphas-alpha_Lzero)
-    cd_i = polar(param,cl_i,machs[i])[0]
+    drag.CLp = cl_i
+    drag.Mp = machs[i]
+    cd_i = drag.polar()
     ax[0].plot(alphas,cl_i,color=cores[i],label=f'Mach = {machs[i]}')
     ax[1].plot(alphas,cd_i,color=cores[i],label=f'Mach = {machs[i]}')
 ax[0].set_xlabel('AoA [deg]')
@@ -141,4 +145,4 @@ ax[0].set_ylabel('CL')
 ax[1].set_ylabel('CD')
 ax[0].legend()
 plt.tight_layout()
-#plt.savefig('polares_mach_alpha.eps')
+plt.savefig('polares_mach_alpha.eps')

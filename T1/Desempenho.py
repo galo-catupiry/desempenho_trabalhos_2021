@@ -228,44 +228,6 @@ def alcance_autonomia_V(V, graph = False, save_graph = False, *altitudes):
             fig_CL.savefig("cl_v_constante.pdf")
     except:
         None
-        
-        
-    # if graph == True:
-        
-                
-    #     #Eficiencia pela altitude
-    #     fig_E = plt.figure(figsize=(6,4))
-    #     plt.plot(range_h, E_list, label = "E")
-    #     plt.xlabel("Altitude [m]", fontsize = 12)
-    #     plt.ylabel("Eficiência ", fontsize = 12)
-    #     plt.grid()
-    #     ax = plt.gca()
-    #     ax.invert_xaxis()
-    #     plt.tight_layout()
-        
-    #     if save_graph == True:
-    #         plt.savefig("eficiencia_Vconstante.pdf")
-            
-    #     plt.show()
-        
-    #     #CL pela altitude
-    #     fig_CL = plt.figure(figsize=(6,4))
-    #     plt.plot(range_h, CL_list, label = "CL")
-    #     plt.grid()
-    #     plt.xlabel("Altitude [m]", fontsize = 12)
-    #     plt.ylabel("$C_L$", fontsize = 12)
-    #     ax = plt.gca()
-    #     ax.invert_xaxis()
-    #     plt.tight_layout()
-        
-    #     if save_graph == True:
-    #         plt.savefig("CL_Vconstante.pdf")
-        
-    #     plt.show()
-        
-    # return deltaX_V, t_V
-
-
 #%% Gráfico de razão de descida por velocidade
 def hdot_V(velocidade, save_graph = False, *altitudes):
     
@@ -336,56 +298,24 @@ def hdot_V(velocidade, save_graph = False, *altitudes):
         plt.savefig("hdot_V.pdf")
     
     plt.show()
-#%% Parâmetros ótimos para V constante
-
-    
-
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-    
-    
-    
-    
-    
 
 
-
-
-
+#%% MAIN
 #%% ------ MAIN -------
-
 start = datetime.now()
 
 altitude = 13105 # [m]
 velocidade = 811/3.6  # [m/s]
 
 
-# alcance_autonomia_CL(velocidade, False, False, 
-#                                         altitude, altitude - 3000, altitude - 6000)
+alcance_autonomia_CL(velocidade, False, False, 
+                                        altitude, altitude - 3000, altitude - 6000)
 
-
-# alcance_autonomia_V(velocidade, True, True,
-#                     altitude, altitude - 3000, altitude - 6000)
-
-
-
+alcance_autonomia_V(velocidade, False, True,
+                    altitude, altitude - 3000, altitude - 6000)
 
 
 hdot_V(velocidade, False, altitude, altitude - 3000, 
                       altitude - 6000, altitude - 8000)
-
-
-
-
 
 print(datetime.now() - start)

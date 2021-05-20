@@ -85,70 +85,70 @@ Mp = np.linspace(0.05,1,20)
 
 # Superfície 3D: Mach variável
 
-fig = plt.figure()
-ax = plt.axes(projection="3d")
-CLp_mesh, Mp_mesh = np.meshgrid(CLp, Mp)
+# fig = plt.figure()
+# ax = plt.axes(projection="3d")
+# CLp_mesh, Mp_mesh = np.meshgrid(CLp, Mp)
 
-drag_plot = DragPolar()
-drag_plot.CLp = CLp_mesh
-drag_plot.Mp = Mp_mesh
-resp_graf = drag_plot.polar()
+# drag_plot = DragPolar()
+# drag_plot.CLp = CLp_mesh
+# drag_plot.Mp = Mp_mesh
+# resp_graf = drag_plot.polar()
 
-ax.plot_surface(Mp_mesh,CLp_mesh, resp_graf, rstride=1, cstride=1,
-                cmap='viridis', edgecolor='none', alpha = 0.9)
-ax.scatter3D(M_expe,CL_expe, CD_expe,c = 'red',alpha=1)
-#ax.set_title("Polar de arrasto")
-ax.set_xlabel("CL")
-ax.set_ylabel("M")
-ax.set_zlabel("CD")
-#plt.savefig("polar_arrasto.svg")
-plt.show()
+# ax.plot_surface(Mp_mesh,CLp_mesh, resp_graf, rstride=1, cstride=1,
+#                 cmap='viridis', edgecolor='none', alpha = 0.9)
+# ax.scatter3D(M_expe,CL_expe, CD_expe,c = 'red',alpha=1)
+# #ax.set_title("Polar de arrasto")
+# ax.set_xlabel("CL")
+# ax.set_ylabel("M")
+# ax.set_zlabel("CD")
+# #plt.savefig("polar_arrasto.svg")
+# plt.show()
 
 
-# Curva CL x CD: Mach fixo
-drag_plot.Mp = 0.8
-drag_plot.CLp = CLp
+# # Curva CL x CD: Mach fixo
+# drag_plot.Mp = 0.8
+# drag_plot.CLp = CLp
 
-fig = plt.figure()
-plt.plot(CLp,drag_plot.polar())
-plt.xlabel("CL")
-plt.ylabel("CD")
-plt.grid(True)
-plt.title("Curva CL x CD")
-plt.show()
+# fig = plt.figure()
+# plt.plot(CLp,drag_plot.polar())
+# plt.xlabel("CL")
+# plt.ylabel("CD")
+# plt.grid(True)
+# plt.title("Curva CL x CD")
+# plt.show()
 
 
 ## Curvas CDO, K por mach
 
-CD0_list = []
-K_list = []
+# CD0_list = []
+# K_list = []
 
-alti_otima = 3800
-velo_otima = 128
+# alti_otima = 3800
+# velo_otima = 128
 
-mach_otimo = velo_otima / Atmosphere(alti_otima).speed_of_sound[0]
+# mach_otimo = velo_otima / Atmosphere(alti_otima).speed_of_sound[0]
 
-mach_list = np.linspace(0.1, 0.8, 10)
-drag_plot.CLp = 0.506892114858062
-for mach in mach_list:
+# mach_list = np.linspace(0.1, 0.8, 10)
+# drag_plot.CLp = 0.506892114858062
+# for mach in mach_list:
     
     
-    drag_plot.Mp = mach
-    drag_plot.polar(False)
-    CD0 = drag_plot.CD0
-    K = drag_plot.K
+#     drag_plot.Mp = mach
+#     drag_plot.polar(False)
+#     CD0 = drag_plot.CD0
+#     K = drag_plot.K
     
-    CD0_list.append(CD0)
-    K_list.append(K)
+#     CD0_list.append(CD0)
+#     K_list.append(K)
     
-fig_CD0K = plt.figure(figsize = (6,4))
-plt.plot(mach_list, CD0_list, label = "CD0")
-plt.plot(mach_list, K_list, label = "K")
-#plt.vlines(mach_otimo, 0.01, 0.09, color = 'k', ls = '--')
-plt.xlabel("Mach", fontsize = 12)
-plt.ylabel("$CD_0$, $K$", fontsize = 12)
-plt.legend()
-plt.grid()
-plt.tight_layout()
-plt.savefig("cd0_k_mach.pdf")
-plt.show()
+# fig_CD0K = plt.figure(figsize = (6,4))
+# plt.plot(mach_list, CD0_list, label = "CD0")
+# plt.plot(mach_list, K_list, label = "K")
+# #plt.vlines(mach_otimo, 0.01, 0.09, color = 'k', ls = '--')
+# plt.xlabel("Mach", fontsize = 12)
+# plt.ylabel("$CD_0$, $K$", fontsize = 12)
+# plt.legend()
+# plt.grid()
+# plt.tight_layout()
+# plt.savefig("cd0_k_mach.pdf")
+# plt.show()

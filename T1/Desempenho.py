@@ -31,204 +31,265 @@ beta = 9296
 rho0 = sealevel.density[0]
 
 #%% Alcance e Autonomia com CL constante
-def alcance_autonomia_CL(altitude, V, 
-                         graph_E_V = False, save_graph_E_V = False):
+def alcance_autonomia_CL(V, graph_E_V = False, save_graph_E_V = False, *altitudes):
     
-    h1 = 0 # [m]
-    h2 = altitude # [m]
+    print("----- Alcance e Autonomia [Caso CL constante] -----")
     
-    rho = Atmosphere(h2).density[0]
-    
-    CL = jet.W / (0.5 * jet.S * (V**2) * rho) #esse cl é mantido constante
-    
-    h_linspace = np.linspace(h2,h1,800, retstep = True)
-    range_h = h_linspace[0]
-    range_dh = abs(h_linspace[1])
-    
-    deltaX_CL = 0
-    t_CL = 0
-    E_list = []
-    V_list = []
-    hdot_list = []
-    
-    drag = DragPolar()
-    
-    for h in range_h:
-        
-        rho_i = Atmosphere(h).density[0]
-        velo_som_i = Atmosphere(h).speed_of_sound[0]
-        V_i = (jet.W / (0.5 * CL * rho_i * jet.S))**.5
-                
-        mach_i = V_i / velo_som_i
-        drag.Mp = mach_i
-        
-        CL_i = CL #mantendo o CL igual o CL inicial
-        drag.CLp = CL_i
-        CD_i = drag.polar()
-        E_i = CL_i / CD_i
-        gamma_i = - 1 / E_i
-        hdot_i = V_i * np.sin(gamma_i)
-                
-        #Alcance
-        deltaX_CL_i = E_i * range_dh # E * [h(i+1) - h(i)]
-        deltaX_CL += deltaX_CL_i
-        
-        E_list.append(E_i)
-        V_list.append(V_i)
-        hdot_list.append(hdot_i)
-        
-        
-        #Autonomia
-        exp_t =  np.e**(- (h - range_dh)/(2*beta)) - np.e**(-h/(2*beta))
-        t_CL_i = 2*beta*E_i * (((rho0 * CL_i)/(2 * jet.WL))**.5) * exp_t
-        t_CL += t_CL_i
-        
     if graph_E_V == True:
-                
-        #Eficiencia pela altitude
-        fig_E = plt.figure(figsize=(6,4))
-        plt.plot(range_h, E_list, label = "E")
-        plt.xlabel("Altitude [m]", fontsize = 12)
-        plt.ylabel("Eficiência ", fontsize = 12)
-        plt.grid()
+        
+        fig_E ,ax_E = plt.subplots(figsize=(6,4))
+        ax_E.set_xlabel("Altitude [m]", fontsize = 12)
+        ax_E.set_ylabel("Eficiência ", fontsize = 12)
+        ax_E.grid()
         ax = plt.gca()
         ax.invert_xaxis()
-        plt.tight_layout()
         
-        if save_graph_E_V == True:
-            plt.savefig("eficiencia_CLconstante.pdf")
-            
-        plt.show()
-
-        #Velocidade pela altitude
-        fig_V = plt.figure(figsize=(6,4))
-        plt.plot(range_h, V_list, label = "V")
-        plt.grid()
-        plt.xlabel("Altitude [m]", fontsize = 12)
-        plt.ylabel("Velocidade [m/s] ", fontsize = 12)
+        
+        
+        fig_V, ax_V = plt.subplots(figsize=(6,4))
+        ax_V.grid()
+        ax_V.set_xlabel("Altitude [m]", fontsize = 12)
+        ax_V.set_ylabel("Velocidade [m/s] ", fontsize = 12)
         ax = plt.gca()
         ax.invert_xaxis()
-        plt.tight_layout()
         
-        if save_graph_E_V == True:
-            plt.savefig("velocidade_CLconstante.pdf")
-        
-        plt.show()
+    for altitude in altitudes:
     
-    return deltaX_CL, t_CL
+        h1 = 0 # [m]
+        h2 = altitude # [m]
+        
+        rho = Atmosphere(h2).density[0]
+        
+        CL = jet.W / (0.5 * jet.S * (V**2) * rho) #esse cl é mantido constante
+        
+        h_linspace = np.linspace(h2,h1,800, retstep = True)
+        range_h = h_linspace[0]
+        range_dh = abs(h_linspace[1])
+        
+        deltaX_CL = 0
+        t_CL = 0
+        E_list = []
+        V_list = []
+        hdot_list = []
+        
+        drag = DragPolar()
+        
+        for h in range_h:
+            
+            rho_i = Atmosphere(h).density[0]
+            velo_som_i = Atmosphere(h).speed_of_sound[0]
+            V_i = (jet.W / (0.5 * CL * rho_i * jet.S))**.5
+                    
+            mach_i = V_i / velo_som_i
+            drag.Mp = mach_i
+            
+            CL_i = CL #mantendo o CL igual o CL inicial
+            drag.CLp = CL_i
+            CD_i = drag.polar()
+            E_i = CL_i / CD_i
+            gamma_i = - 1 / E_i
+            hdot_i = V_i * np.sin(gamma_i)
+                    
+            #Alcance
+            deltaX_CL_i = E_i * range_dh # E * [h(i+1) - h(i)]
+            deltaX_CL += deltaX_CL_i
+            
+            E_list.append(E_i)
+            V_list.append(V_i)
+            hdot_list.append(hdot_i)
+            
+            
+            #Autonomia
+            exp_t =  np.e**(- (h - range_dh)/(2*beta)) - np.e**(-h/(2*beta))
+            t_CL_i = 2*beta*E_i * (((rho0 * CL_i)/(2 * jet.WL))**.5) * exp_t
+            t_CL += t_CL_i
+            
+          
+        print("Altitude : {} m".format(altitude))
+        print("Velocidade inicial {} m/s".format(velocidade))
+        print("Alcance: {} m ".format(deltaX_CL))
+        print("Autonomia: {} s".format(t_CL))
+        print("----------------------")  
+        
+        try:
+            ax_E.plot(range_h, E_list, label = "Altitude :{} m".format(altitude))
+            ax_V.plot(range_h, V_list, label = "Altitude :{} m".format(altitude))
+        except:
+            None
+            
+    try:
+        ax_E.legend()
+        ax_V.legend()
+        plt.tight_layout()
+        
+        if save_graph_E_V == True:
+            fig_E.savefig("eficiencia_cl_constante.pdf")
+            fig_V.savefig("velocidade_cl_constante.pdf")
+    except:
+        None
+            
+
 
 
 #%% Alcance e Autonomia com V constante
-def alcance_autonomia_V(altitude, V, graph = False, save_graph = False):
+def alcance_autonomia_V(V, graph = False, save_graph = False, *altitudes):
     
-    ## Considerando velocidade e altitude de cruzeiro
-    h1 = 0 # [m]
-    h2 = altitude # [m]
-
-    #velo_som = ISA(h2)[2] # [m/s]
-    velo_som = Atmosphere(h2).speed_of_sound[0]
-    mach_cru = V / velo_som
     
-    h_linspace = np.linspace(h2,h1,800, retstep = True) 
-    range_h = h_linspace[0]
-    range_dh = abs(h_linspace[1])
+    print("----- Alcance e Autonomia [Caso V constante] -----")
     
-    deltaX_V = 0
-    t_V = 0
-    E_list = []
-    CL_list = []
-    
-    drag = DragPolar()
-    
-    for h in range_h:
-        
-        rho_i = Atmosphere(h).density[0]
-        velo_som_i = Atmosphere(h).speed_of_sound[0]
-        mach_i = V/velo_som_i
-        drag.Mp = mach_i
-        
-        CL_i = (2 * jet.WL)/(rho_i * V**2)
-        drag.CLp = CL_i
-        CD_i = drag.polar()
-        E_i = CL_i / CD_i
-        
-        
-        A_i = (rho0 * drag.CD0 * V**2)/(2 * jet.WL)
-        B_i = (2 * drag.K * jet.WL)/(rho0 * V**2)
-        
-        tan1_i = np.arctan(B_i**-1 * A_i * np.e**(-(h - range_dh)/beta))
-        tan2_i = np.arctan(B_i**-1 * A_i * np.e**(-h/beta))
-        
-        #Alcance
-        deltaX_V_i = (beta/B_i)* (tan1_i - tan2_i)
-        deltaX_V += deltaX_V_i
-        
-        #Autonomia
-        t_V_i = beta/(B_i * V) * (tan1_i - tan2_i)
-        t_V += t_V_i
-        
-        E_list.append(E_i)
-        CL_list.append(CL_i)
-        
-        
     if graph == True:
         
-                
-        #Eficiencia pela altitude
-        fig_E = plt.figure(figsize=(6,4))
-        plt.plot(range_h, E_list, label = "E")
-        plt.xlabel("Altitude [m]", fontsize = 12)
-        plt.ylabel("Eficiência ", fontsize = 12)
-        plt.grid()
+        fig_E ,ax_E = plt.subplots(figsize=(6,4))
+        ax_E.set_xlabel("Altitude [m]", fontsize = 12)
+        ax_E.set_ylabel("Eficiência ", fontsize = 12)
+        ax_E.grid()
         ax = plt.gca()
         ax.invert_xaxis()
-        plt.tight_layout()
         
-        if save_graph == True:
-            plt.savefig("eficiencia_Vconstante.pdf")
-            
-        plt.show()
-        
-        #CL pela altitude
-        fig_CL = plt.figure(figsize=(6,4))
-        plt.plot(range_h, CL_list, label = "CL")
-        plt.grid()
-        plt.xlabel("Altitude [m]", fontsize = 12)
-        plt.ylabel("$C_L$", fontsize = 12)
-        ax = plt.gca()
-        ax.invert_xaxis()
-        plt.tight_layout()
-        
-        if save_graph == True:
-            plt.savefig("CL_Vconstante.pdf")
-        
-        plt.show()
-        
-    return deltaX_V, t_V
-
-
-#%%
-#Parâmetros ótimos para CL constante
-def parametros_otimos_CL(velocidade, save_graph = False, *altitudes, ):
     
+        fig_CL, ax_CL = plt.subplots(figsize=(6,4))
+        ax_CL.grid()
+        ax_CL.set_xlabel("Altitude [m]", fontsize = 12)
+        ax_CL.set_ylabel("$C_L$", fontsize = 12)
+        ax = plt.gca()
+        ax.invert_xaxis()
+    
+    for altitude in altitudes:
+    
+        ## Considerando velocidade e altitude de cruzeiro
+        h1 = 0 # [m]
+        h2 = altitude # [m]
+
+        velo_som = Atmosphere(h2).speed_of_sound[0]
+        mach_cru = V / velo_som
+    
+        h_linspace = np.linspace(h2,h1,800, retstep = True) 
+        range_h = h_linspace[0]
+        range_dh = abs(h_linspace[1])
+    
+        deltaX_V = 0
+        t_V = 0
+        E_list = []
+        CL_list = []
+    
+        drag = DragPolar()
+    
+        for h in range_h:
+        
+            rho_i = Atmosphere(h).density[0]
+            velo_som_i = Atmosphere(h).speed_of_sound[0]
+            mach_i = V/velo_som_i
+            drag.Mp = mach_i
+        
+            CL_i = (2 * jet.WL)/(rho_i * V**2)
+            drag.CLp = CL_i
+            CD_i = drag.polar()
+            E_i = CL_i / CD_i
+        
+        
+            A_i = (rho0 * drag.CD0 * V**2)/(2 * jet.WL)
+            B_i = (2 * drag.K * jet.WL)/(rho0 * V**2)
+        
+            tan1_i = np.arctan(B_i**-1 * A_i * np.e**(-(h - range_dh)/beta))
+            tan2_i = np.arctan(B_i**-1 * A_i * np.e**(-h/beta))
+        
+            #Alcance
+            deltaX_V_i = (beta/B_i)* (tan1_i - tan2_i)
+            deltaX_V += deltaX_V_i
+            
+            #Autonomia
+            t_V_i = beta/(B_i * V) * (tan1_i - tan2_i)
+            t_V += t_V_i
+            
+            E_list.append(E_i)
+            CL_list.append(CL_i)
+            
+            
+            
+        print("Altitude : {} m".format(altitude))
+        print("Velocidade inicial {} m/s".format(velocidade))
+        print("Alcance: {} m ".format(deltaX_V))
+        print("Autonomia: {} s".format(t_V))
+        print("----------------------")  
+        
+        try:
+            ax_E.plot(range_h, E_list, label = "Altitude :{} m".format(altitude))
+            ax_CL.plot(range_h, CL_list, label = "Altitude :{} m".format(altitude))
+        except:
+            None
+            
+    try:
+        ax_E.legend()
+        ax_CL.legend()
+        plt.tight_layout()
+        
+        if save_graph == True:
+            fig_E.savefig("eficiencia_v_constante.pdf")
+            fig_CL.savefig("cl_v_constante.pdf")
+    except:
+        None
+        
+        
+    # if graph == True:
+        
+                
+    #     #Eficiencia pela altitude
+    #     fig_E = plt.figure(figsize=(6,4))
+    #     plt.plot(range_h, E_list, label = "E")
+    #     plt.xlabel("Altitude [m]", fontsize = 12)
+    #     plt.ylabel("Eficiência ", fontsize = 12)
+    #     plt.grid()
+    #     ax = plt.gca()
+    #     ax.invert_xaxis()
+    #     plt.tight_layout()
+        
+    #     if save_graph == True:
+    #         plt.savefig("eficiencia_Vconstante.pdf")
+            
+    #     plt.show()
+        
+    #     #CL pela altitude
+    #     fig_CL = plt.figure(figsize=(6,4))
+    #     plt.plot(range_h, CL_list, label = "CL")
+    #     plt.grid()
+    #     plt.xlabel("Altitude [m]", fontsize = 12)
+    #     plt.ylabel("$C_L$", fontsize = 12)
+    #     ax = plt.gca()
+    #     ax.invert_xaxis()
+    #     plt.tight_layout()
+        
+    #     if save_graph == True:
+    #         plt.savefig("CL_Vconstante.pdf")
+        
+    #     plt.show()
+        
+    # return deltaX_V, t_V
+
+
+#%% Gráfico de razão de descida por velocidade
+def hdot_V(velocidade, save_graph = False, *altitudes):
+    
+    CL_max = 1
+    
+    V_stall = np.sqrt(jet.W / (CL_max * 0.5 * jet.S * Atmosphere(13105).density[0]))
     
     fig_hdotV = plt.figure()
     
-    E_max = 13.73
-    gamma_min = -1/E_max 
+    # E_max = 13.25
+    # gamma_min = -1/E_max 
         
-    rho_cru = Atmosphere(13105).density[0]
-    V_cru = 811 / 3.6
-    mach_cru = V_cru / Atmosphere(13105).speed_of_sound[0]
-    CL_cru = jet.W / (0.5 * rho_cru * (V_cru**2.0) * jet.S)
+    # rho_cru = Atmosphere(13105).density[0]
+    # V_cru = 811 / 3.6
+    # mach_cru = V_cru / Atmosphere(13105).speed_of_sound[0]
+    # CL_cru = jet.W / (0.5 * rho_cru * (V_cru**2.0) * jet.S)
     
-    drag_cru = DragPolar(CL_cru, mach_cru)
-    drag_cru.CLp = CL_cru
-    drag_cru.Mp = mach_cru
+    # drag_cru = DragPolar(CL_cru, mach_cru)
+    # drag_cru.CLp = CL_cru
+    # drag_cru.Mp = mach_cru
     
-    V_list = np.linspace(5, 1.5*velocidade, 400)
+    V_list = np.linspace(0.4*V_stall, 1.5*V_stall, 100)
     
-    plt.plot(V_list, [i*gamma_min for i in V_list], color = 'k' , label = "$\gamma$ min= {}".format(round(gamma_min,5)))
+    #plt.plot(V_list, [i*gamma_min for i in V_list], color = 'k' , label = "$\gamma$ min= {}".format(round(gamma_min,5)))
     
     for altitude in altitudes:
         
@@ -236,25 +297,36 @@ def parametros_otimos_CL(velocidade, save_graph = False, *altitudes, ):
         
         rho = Atmosphere(altitude).density[0]
         velo_som = Atmosphere(altitude).speed_of_sound[0]
+    
+        drag = DragPolar()
         
         for Vi in V_list:
             
             mach = Vi/velo_som
+            
             CL = jet.W / (0.5 * rho * (Vi ** 2) * jet.S)
             
-            CD = 0.01845 + 0.0722 * (CL**2)
-
+            drag.CLp = CL
+            drag.Mp = mach
+            drag.polar(False)
+        
+            CD0 = drag.CD0
+            K = drag.K
             
+            CD = CD0 + K * (CL**2)
+
             E = CL/CD
             gamma = -1/E
-            hdot = Vi*np.sin(gamma)
+            hdot = Vi*gamma
             
             hdot_list.append(hdot)
             
         plt.plot(V_list, hdot_list, label = "Altitude: {} m".format(altitude))
+        
+    plt.axvline(V_stall, ymin = -60, ymax = 1, ls = '--', color = 'k', label = "Velocidade de Stall")
     plt.grid()
-    plt.ylim([-50,1])
-    plt.xlim([20,250])
+    plt.ylim([-30,1])
+    plt.xlim([100,250])
     plt.xlabel("Velocidade [m/s]", fontsize = 12)
     plt.ylabel("Razão de descida $\dot{h}$", fontsize = 12)
     plt.legend()
@@ -264,6 +336,30 @@ def parametros_otimos_CL(velocidade, save_graph = False, *altitudes, ):
         plt.savefig("hdot_V.pdf")
     
     plt.show()
+#%% Parâmetros ótimos para V constante
+
+    
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+    
+    
+    
+    
+
+
+
 
 
 #%% ------ MAIN -------
@@ -273,22 +369,23 @@ start = datetime.now()
 altitude = 13105 # [m]
 velocidade = 811/3.6  # [m/s]
 
-print("----- Alcance e Autonomia [Caso CL constante] -----")
-deltaX_CL, t_CL = alcance_autonomia_CL(altitude, velocidade, True, False)
-print("Delta_X = {} [m]".format(round(deltaX_CL,2)))
-print("t = {} [s]".format(round(t_CL,2)))
+
+# alcance_autonomia_CL(velocidade, False, False, 
+#                                         altitude, altitude - 3000, altitude - 6000)
+
+
+# alcance_autonomia_V(velocidade, True, True,
+#                     altitude, altitude - 3000, altitude - 6000)
 
 
 
 
-print("----- Alcance e autonomia [Caso V constante] -----")
-deltaX_V, t_V = alcance_autonomia_V(altitude, velocidade, True, False)
-print("Delta_X = {} [m]".format(round(deltaX_V,2)))
-print("t = {} [s]".format(round(t_V,2)))
+
+hdot_V(velocidade, False, altitude, altitude - 3000, 
+                      altitude - 6000, altitude - 8000)
 
 
-parametros_otimos_CL(velocidade, False, altitude, altitude - 2000,
-                     altitude - 4000, altitude - 8000)
+
 
 
 print(datetime.now() - start)

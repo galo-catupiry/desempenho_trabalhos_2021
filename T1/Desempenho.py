@@ -304,6 +304,7 @@ def max_CL_cte(x,h1,h2,cond):
     V = x[2]
     
     drag_CL.Mp = V/velo_som
+    drag_polar_CL = drag_CL.polar()
 
     if (cond.get('condicao') == 'max_range'):
         
@@ -434,6 +435,7 @@ def max_V_cte(x,h1, h2, cond):
     velo_som = (velo_som1 + velo_som2)/2
     
     drag_V.Mp = V/velo_som
+    drag_polar = drag_V.polar()
     
     CD0_exp = drag_V.CD0 - CD0
     k_exp = drag_V.K - k

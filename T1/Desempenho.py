@@ -45,7 +45,6 @@ def alcance_autonomia_CL(V, graph_E_V = False, save_graph_E_V = False, *altitude
         ax.invert_xaxis()
         
         
-        
         fig_V, ax_V = plt.subplots(figsize=(6,4))
         ax_V.grid()
         ax_V.set_xlabel("Altitude [m]", fontsize = 12)
@@ -70,14 +69,16 @@ def alcance_autonomia_CL(V, graph_E_V = False, save_graph_E_V = False, *altitude
         t_CL = 0
         E_list = []
         V_list = []
-        hdot_list = []
+
         
         drag = DragPolar()
         
         for h in range_h:
             
-            rho_i = Atmosphere(h).density[0]
-            velo_som_i = Atmosphere(h).speed_of_sound[0]
+
+            rho_i = (Atmosphere(h).density[0] + Atmosphere(h-range_dh).density[0])/2
+            velo_som_i = (Atmosphere(h).speed_of_sound[0] + Atmosphere(h-range_dh).speed_of_sound[0])/2
+
             V_i = (jet.W / (0.5 * CL * rho_i * jet.S))**.5
                     
             mach_i = V_i / velo_som_i
@@ -87,8 +88,7 @@ def alcance_autonomia_CL(V, graph_E_V = False, save_graph_E_V = False, *altitude
             drag.CLp = CL_i
             CD_i = drag.polar()
             E_i = CL_i / CD_i
-            gamma_i = - 1 / E_i
-            hdot_i = V_i * np.sin(gamma_i)
+
                     
             #Alcance
             deltaX_CL_i = E_i * range_dh # E * [h(i+1) - h(i)]
@@ -96,8 +96,7 @@ def alcance_autonomia_CL(V, graph_E_V = False, save_graph_E_V = False, *altitude
             
             E_list.append(E_i)
             V_list.append(V_i)
-            hdot_list.append(hdot_i)
-            
+
             
             #Autonomia
             exp_t =  np.e**(- (h - range_dh)/(2*beta)) - np.e**(-h/(2*beta))
@@ -106,10 +105,11 @@ def alcance_autonomia_CL(V, graph_E_V = False, save_graph_E_V = False, *altitude
             
           
         print("Altitude : {} m".format(altitude))
-        print("Velocidade inicial {} m/s".format(velocidade))
-        print("Alcance: {} m ".format(deltaX_CL))
-        print("Autonomia: {} s".format(t_CL))
-        print("----------------------")  
+        print("Velocidade inicial {} m/s".format(round(velocidade,2)))
+        print("CL : {} ".format(round(CL,2)))
+        print("Alcance: {} m ".format(round(deltaX_CL,2)))
+        print("Autonomia: {} s".format(round(t_CL,2)))
+        print("---------------------------------------------------")  
         
         try:
             ax_E.plot(range_h, E_list, label = "Altitude :{} m".format(altitude))
@@ -160,8 +160,6 @@ def alcance_autonomia_V(V, graph = False, save_graph = False, *altitudes):
         h1 = 0 # [m]
         h2 = altitude # [m]
 
-        velo_som = Atmosphere(h2).speed_of_sound[0]
-        mach_cru = V / velo_som
     
         h_linspace = np.linspace(h2,h1,800, retstep = True) 
         range_h = h_linspace[0]
@@ -175,9 +173,11 @@ def alcance_autonomia_V(V, graph = False, save_graph = False, *altitudes):
         drag = DragPolar()
     
         for h in range_h:
-        
-            rho_i = Atmosphere(h).density[0]
-            velo_som_i = Atmosphere(h).speed_of_sound[0]
+                    
+            rho_i = (Atmosphere(h).density[0] + Atmosphere(h-range_dh).density[0])/2
+            velo_som_i = (Atmosphere(h).speed_of_sound[0] + Atmosphere(h-range_dh).speed_of_sound[0])/2
+            
+            
             mach_i = V/velo_som_i
             drag.Mp = mach_i
         
@@ -190,8 +190,8 @@ def alcance_autonomia_V(V, graph = False, save_graph = False, *altitudes):
             A_i = (rho0 * drag.CD0 * V**2)/(2 * jet.WL)
             B_i = (2 * drag.K * jet.WL)/(rho0 * V**2)
         
-            tan1_i = np.arctan(B_i**-1 * A_i * np.e**(-(h - range_dh)/beta))
-            tan2_i = np.arctan(B_i**-1 * A_i * np.e**(-h/beta))
+            tan1_i = np.arctan((A_i/B_i) * np.e**(-(h - range_dh)/beta))
+            tan2_i = np.arctan((A_i/B_i) * np.e**(-h/beta))
         
             #Alcance
             deltaX_V_i = (beta/B_i)* (tan1_i - tan2_i)
@@ -207,10 +207,10 @@ def alcance_autonomia_V(V, graph = False, save_graph = False, *altitudes):
             
             
         print("Altitude : {} m".format(altitude))
-        print("Velocidade inicial {} m/s".format(velocidade))
-        print("Alcance: {} m ".format(deltaX_V))
-        print("Autonomia: {} s".format(t_V))
-        print("----------------------")  
+        print("Velocidade {} m/s".format(round(velocidade,2)))
+        print("Alcance: {} m".format(round(deltaX_V,2)))
+        print("Autonomia: {} s".format(round(t_V,2)))
+        print("---------------------------------------------------")  
         
         try:
             ax_E.plot(range_h, E_list, label = "Altitude :{} m".format(altitude))
@@ -236,22 +236,9 @@ def hdot_V(velocidade, save_graph = False, *altitudes):
     V_stall = np.sqrt(jet.W / (CL_max * 0.5 * jet.S * Atmosphere(13105).density[0]))
     
     fig_hdotV = plt.figure()
-    
-    # E_max = 13.25
-    # gamma_min = -1/E_max 
         
-    # rho_cru = Atmosphere(13105).density[0]
-    # V_cru = 811 / 3.6
-    # mach_cru = V_cru / Atmosphere(13105).speed_of_sound[0]
-    # CL_cru = jet.W / (0.5 * rho_cru * (V_cru**2.0) * jet.S)
-    
-    # drag_cru = DragPolar(CL_cru, mach_cru)
-    # drag_cru.CLp = CL_cru
-    # drag_cru.Mp = mach_cru
-    
     V_list = np.linspace(0.4*V_stall, 1.5*V_stall, 100)
     
-    #plt.plot(V_list, [i*gamma_min for i in V_list], color = 'k' , label = "$\gamma$ min= {}".format(round(gamma_min,5)))
     
     for altitude in altitudes:
         
@@ -305,14 +292,14 @@ def hdot_V(velocidade, save_graph = False, *altitudes):
 start = datetime.now()
 
 altitude = 13105 # [m]
-velocidade = 811/3.6  # [m/s]
+velocidade = 811 / 3.6  # [m/s]
 
 
 alcance_autonomia_CL(velocidade, False, False, 
-                                        altitude, altitude - 3000, altitude - 6000)
+                                        altitude, altitude - 3000)
 
-alcance_autonomia_V(velocidade, False, True,
-                    altitude, altitude - 3000, altitude - 6000)
+alcance_autonomia_V(velocidade, False, False,
+                    altitude, altitude - 3000)
 
 
 hdot_V(velocidade, False, altitude, altitude - 3000, 

@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 from ambiance import Atmosphere
 from Interpolacao import DragPolar
 from aircraft import JetStar
-from datetime import datetime
+from scipy.optimize import fsolve
 
 #%% Dados Gerais
 
@@ -31,6 +31,7 @@ beta = 9296
 rho0 = sealevel.density[0]
 
 #%% Alcance e Autonomia com CL constante
+
 def alcance_autonomia_CL(V, graph_E_V = False, save_graph_E_V = False, *altitudes):
     
     print("----- Alcance e Autonomia [Caso CL constante] -----")
@@ -105,7 +106,7 @@ def alcance_autonomia_CL(V, graph_E_V = False, save_graph_E_V = False, *altitude
             
           
         print("Altitude : {} m".format(altitude))
-        print("Velocidade inicial {} m/s".format(round(velocidade,2)))
+        print("Velocidade inicial {} m/s".format(round(V,2)))
         print("CL : {} ".format(round(CL,2)))
         print("Alcance: {} m ".format(round(deltaX_CL,2)))
         print("Autonomia: {} s".format(round(t_CL,2)))
@@ -127,11 +128,9 @@ def alcance_autonomia_CL(V, graph_E_V = False, save_graph_E_V = False, *altitude
             fig_V.savefig("velocidade_cl_constante.pdf")
     except:
         None
-            
-
-
-
+  
 #%% Alcance e Autonomia com V constante
+
 def alcance_autonomia_V(V, graph = False, save_graph = False, *altitudes):
     
     
@@ -207,7 +206,7 @@ def alcance_autonomia_V(V, graph = False, save_graph = False, *altitudes):
             
             
         print("Altitude : {} m".format(altitude))
-        print("Velocidade {} m/s".format(round(velocidade,2)))
+        print("Velocidade {} m/s".format(round(V,2)))
         print("Alcance: {} m".format(round(deltaX_V,2)))
         print("Autonomia: {} s".format(round(t_V,2)))
         print("---------------------------------------------------")  
@@ -228,7 +227,9 @@ def alcance_autonomia_V(V, graph = False, save_graph = False, *altitudes):
             fig_CL.savefig("cl_v_constante.pdf")
     except:
         None
+        
 #%% Gráfico de razão de descida por velocidade
+
 def hdot_V(velocidade, save_graph = False, *altitudes):
     
     CL_max = 1
@@ -285,24 +286,240 @@ def hdot_V(velocidade, save_graph = False, *altitudes):
         plt.savefig("hdot_V.pdf")
     
     plt.show()
+    
+#%% Parâmetros ótimos para CL constante
+
+drag_CL = DragPolar()
+drag_CL.CLp = 0
 
 
-#%% MAIN
-#%% ------ MAIN -------
-start = datetime.now()
+def max_CL_cte(x,h1,h2,cond):
+    
+    rho = (Atmosphere(h1).density[0] + Atmosphere(h2).density[0])/2
+    velo_som = (Atmosphere(h1).speed_of_sound[0] +  Atmosphere(h2).speed_of_sound[0])/2
+    
+    # Variáveis desconhecidas:
+    CD0 = x[0]
+    k = x[1]
+    V = x[2]
+    
+    drag_CL.Mp = V/velo_som
 
-altitude = 13105 # [m]
-velocidade = 811 / 3.6  # [m/s]
+    if (cond.get('condicao') == 'max_range'):
+        
+        # CL de otimização do alcance:
+        CL = np.sqrt(CD0/k)
+            
+        # Equações do sistema:
+        eq1 = (jet.W / (0.5 * CL * rho * jet.S))**.5 - V
+        eq2 = drag_CL.CD0 - CD0
+        eq3 = drag_CL.K - k
+            
+        return [eq1,eq2,eq3] 
+
+    elif (cond.get('condicao') == 'max_endurance'):
+        
+        # CL de otimização da autonomia:
+        CL = np.sqrt(3*CD0/k)
+        
+        # Equações do sistema:
+        eq1 = (jet.W / (0.5 * CL * rho * jet.S))**.5 - V
+        eq2 = drag_CL.CD0 - CD0
+        eq3 = drag_CL.K - k
+        
+        return [eq1,eq2,eq3]
 
 
-alcance_autonomia_CL(velocidade, False, False, 
-                                        altitude, altitude - 3000)
+def parametros_otimos_CL(cond):
+    
+    velocidade = cond.get('v')
+    altitude = cond.get('h')
+    
+    xmax_CL = []
+    CL_resp1 = []
+    tmax_CL = []
+    CL_resp2 = []
+    E_resp = []
+    
+    h1 = 0 # [m]
+    h2 = altitude # [m]
+    
+    h_linspace = np.linspace(h2,h1,200, retstep = True)
+    range_h = h_linspace[0]
+    
+    initial = [0.08, 0.01, velocidade]
+    
+    if (cond.get('condicao') == 'max_range'):                       # Case: Máximo range
+        
+        for i in np.arange(0,len(range_h) - 1):
+            h1 = range_h[i+1]
+            h2 = range_h[i]
+        
+            [CD0_resp,k_resp,V_resp] = fsolve(max_CL_cte, initial, args = (h1,h2,cond))
+                
+            initial = [CD0_resp,k_resp,V_resp]
+              
+            # Parâmetros de interesse:   
+            
+            CL = np.sqrt(CD0_resp/k_resp)
+            CD = 2*CD0_resp
+            E = CL/CD
+            range_max = E*(h2 - h1)  
+            
+            CL_resp1.append(CL)
+            xmax_CL.append(range_max)
+    
+    
+        plt.figure()
+        plt.plot(range_h[:len(range_h) - 1], CL_resp1)
+        plt.gca().invert_xaxis()
+        plt.ylabel(" CL para máximo alcance")
+        plt.xlabel ("Altitude [m]")
+        plt.grid(True)
+            
+        return xmax_CL
+    
+    elif (cond.get('condicao') == 'max_endurance'):
+        
+        for i in np.arange(0,len(range_h) - 1):
+            h1 = range_h[i+1]
+            h2 = range_h[i]
+        
+            [CD0_resp,k_resp,V_resp] = fsolve(max_CL_cte, initial, args = (h1,h2,cond))
+                
+            initial = [CD0_resp,k_resp,V_resp]
+              
+            CL = np.sqrt(3*CD0_resp/k_resp)
+            CD = 4*CD0_resp
+            E = CL/CD
+            endurance_max = (2*beta*E)*np.sqrt((rho0*jet.S*CL)/(2*jet.W))*(np.exp(-h1/(2*beta)) - np.exp(-h2/(2*beta)))
+            
+            CL_resp2.append(CL)
+            E_resp.append(E)
+            tmax_CL.append(endurance_max)
+        
+        plt.figure()
+        #plt.plot(range_h[:len(range_h) - 1], CL_resp2)
+        plt.plot(range_h[:len(range_h) - 1], E_resp)
+        plt.gca().invert_xaxis()
+        plt.ylabel(" Eficiência máxima (E)")
+        #plt.ylabel(" CL para máxima autonomia")
+        plt.xlabel ("Altitude [m]")
+        plt.grid(True)
+        
+        return tmax_CL
 
-alcance_autonomia_V(velocidade, False, False,
-                    altitude, altitude - 3000)
+#%% Parâmetros ótimos para V constante 
+
+drag_V = DragPolar()
+drag_V.CLp = 0
 
 
-hdot_V(velocidade, False, altitude, altitude - 3000, 
-                      altitude - 6000, altitude - 8000)
+def max_V_cte(x,h1, h2, cond):
+    
+    CD0 = x[0]
+    k = x[1]
+    V = x[2]
+    
+    # Parâmetros comuns à ambos os casos:
+        
+    a1 = rho0**2*CD0*jet.S**2/(4*jet.W**2*k)*np.exp(-h1/beta)
+    a2 = rho0**2*CD0*jet.S**2/(4*jet.W**2*k)*np.exp(-h2/beta)
+    
+    #A = rho0*CD0*(V**2)*jet.S/(2*jet.W) 
+    #B = 2*jet.W*k/(rho0*(V**2)*jet.S)
+    
+    velo_som1 = Atmosphere(h1).speed_of_sound[0]
+    velo_som2 = Atmosphere(h2).speed_of_sound[0]
+    velo_som = (velo_som1 + velo_som2)/2
+    
+    drag_V.Mp = V/velo_som
+    
+    CD0_exp = drag_V.CD0 - CD0
+    k_exp = drag_V.K - k
+    
+    # Velocidade para cada caso de análise:
+        
+    if (cond.get('condicao') == 'max_range'):
+        V_exp = (3/(a1*a2))**(1/8) - V
+    elif(cond.get('condicao') == 'max_endurance'):
+        V_exp = (5/(3*a1*a2))**(1/8) - V
 
-print(datetime.now() - start)
+    return [V_exp, CD0_exp, k_exp]
+
+def parametros_otimos_V(cond):
+    
+    xmax = []
+    Vresp1 = []
+    tmax = []
+    Vresp2 = []
+    
+    
+    altitude = cond.get('h')
+    velocidade = cond.get('v')
+    
+    
+    h1 = 0 # [m]
+    h2 = altitude # [m]
+    initial = [0.08, 0.01, velocidade]
+    
+    h_linspace = np.linspace(h2,h1,200, retstep = True,endpoint = True) 
+    range_h = h_linspace[0]
+    
+    if (cond.get('condicao') == 'max_range'):                       # Case: Máximo range
+        
+        for i in np.arange(0,len(range_h) - 1):
+            h1 = range_h[i+1]
+            h2 = range_h[i]
+            
+            [CD0_resp,k_resp,V_resp] = fsolve(max_V_cte, initial, args = (h1,h2,cond))
+            
+            initial = [CD0_resp,k_resp,V_resp]
+            
+            a1 = rho0**2*CD0_resp*jet.S**2/(4*jet.W**2*k_resp)*np.exp(-h1/beta)
+            a2 = rho0**2*CD0_resp*jet.S**2/(4*jet.W**2*k_resp)*np.exp(-h2/beta)
+            V = (3/(a1*a2))**(1/8)
+            range_max = beta*rho0*jet.S/(2*jet.W*k_resp)*(a1 - a2)*V**6/(1 + a1*a2*V**8)
+    
+            xmax.append(range_max)
+            Vresp1.append(V)
+ 
+        
+        plt.figure()
+        plt.plot(Vresp1,range_h[:len(range_h) - 1])
+        plt.xlabel(" Velocidade para máximo alcance [m/s]")
+        plt.ylabel ("Altitude [m]")
+        plt.grid(True)
+        
+        return xmax 
+    
+    elif (cond.get('condicao') == 'max_endurance'):                 # Case: Máximo endurance
+         
+        for j in np.arange(0,len(range_h) - 1):
+            h1 = range_h[j+1]
+            h2 = range_h[j]
+            
+            [CD0_resp,k_resp,V_resp] = fsolve(max_V_cte, initial, args = (h1,h2,cond))
+            
+            initial = [CD0_resp,k_resp,V_resp]
+            
+            a1 = (rho0**2)*CD0_resp*jet.S**2/(4*jet.W**2*k_resp)*np.exp(-h1/beta)
+            a2 = (rho0**2)*CD0_resp*jet.S**2/(4*jet.W**2*k_resp)*np.exp(-h2/beta)
+            
+            V = (5/(3*a1*a2))**(1/8)
+            
+            A = rho0*CD0_resp*(V**2)*jet.S/(2*jet.W) 
+            B = 2*jet.W*k_resp/(rho0*(V**2)*jet.S)
+    
+            endurance_max = beta/(B*V_resp)*(np.arctan(A/B*np.exp(-h1/beta)) - np.arctan(A/B*np.exp(-h2/beta)))
+            
+            tmax.append(endurance_max)
+            Vresp2.append(V)
+            
+        plt.figure()
+        plt.plot(Vresp2,range_h[:len(range_h) - 1], 'r')
+        plt.xlabel(" Velocidade para máxima autonomia [m/s]")
+        plt.ylabel ("Altitude [m]")
+        plt.grid(True)
+        
+        return tmax  

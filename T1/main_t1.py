@@ -6,26 +6,62 @@ Integrantes:
     Alessandro Melo de Oliveira - 10788662
     Guilherme Beppu de Souza    - 10696681
     Thiago Buchignani De Amicis - 10277418
+    
+    
+As funções abaixo permitem analisar as condições gerais (CL constante ou V constante),
+o gráfico de razão de descida por velocidade, e as condições envolvendo os parâmetros ótimos
+
+Descomente a função que deseja usar, alterando os valores de interesse na variável 'cond'.
+A chave 'condicao' deve ser "max_range" ou "max_endurance".
+
+Em caso de dúvidas, contate um membro do grupo.    
+    
 """
+
 import os, sys
 current_dir = os.path.dirname(os.path.realpath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
-from Desempenho import alcance_autonomia_CL, alcance_autonomia_V
+from datetime import datetime
+from Desempenho import (alcance_autonomia_CL, alcance_autonomia_V, 
+                        hdot_V, parametros_otimos_V, parametros_otimos_CL)
 
-altitude = 4000 # [m]
-velocidade = 400 / 3.6 # [m/s]
+#%% ------ MAIN -------
+start = datetime.now()
 
-print("----- Alcance e Autonomia [Caso CL constante] -----")
-deltaX_CL, t_CL = alcance_autonomia_CL(altitude, velocidade, True, False, False, False)
-print("Delta_X = {} [m]".format(round(deltaX_CL,2)))
-print("t = {} [s]".format(round(t_CL,2)))
+altitude = 13105 # [m]
+velocidade = 811 / 3.6  # [m/s]
+
+cond = {'condicao': 'max_endurance', 'h': altitude, 'v': velocidade}
+
+# =========== Caso Geral =========== #
+# alcance_autonomia_CL(cond.get('v'), False, False, 
+#                                         cond.get('h'))
+
+# alcance_autonomia_V(cond.get('v'), False, False,
+#                     cond.get('h'))
 
 
+# hdot_V(cond.get('v'), False, 
+#         cond.get('h'))
 
-print("----- Alcance e autonomia [Caso V constante] -----")
-deltaX_V, t_V = alcance_autonomia_V(altitude, velocidade, True, False)
-print("Delta_X = {} [m]".format(round(deltaX_V,2)))
-print("t = {} [s]".format(round(t_V,2)))
+# =========== Parâmetros Ótimos =========== #
+
+# resp_V = parametros_otimos_V(cond)
+# resp_CL = parametros_otimos_CL(cond)
+
+# if (cond.get('condicao') == 'max_range'):
+#     print(" ----- Máximo alcance para V constante -----")
+#     print("Delta_X = {} [m]".format(round(sum(resp_V),2)))
+#     print(" ----- Máximo alcance para CL constante -----")
+#     print("Delta_X = {} [m]".format(round(sum(resp_CL),2)))
+    
+# elif (cond.get('condicao') == 'max_endurance'):
+#     print(" ----- Máxima autonomia para V constante -----")
+#     print("Delta_t = {} [s]".format(round(sum(resp_V),2)))
+#     print(" ----- Máxima autonomia para CL constante -----")
+#     print("Delta_t = {} [s]".format(round(sum(resp_CL),2)))
+
+print(datetime.now() - start)
 

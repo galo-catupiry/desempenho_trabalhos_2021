@@ -63,17 +63,48 @@ def total_drag(V,h):
     
     return D_resp, Dmin_resp
 
-# Cruise Velocity
-def cruise_velocity():
+# Cruise Velocity equations
+def cruise_velocity_eq(x,h,V_type):
     
+    CD0 = x[0]
+    K = x[1]
+    V = x[2]
     
-    return
+    sigma = Atmosphere(h).density[0]/rho0
+    drag_polar = drag_object.polar()
+    drag_object.Mp = V/Atmosphere(h).speed_of_sound[0]
+    Emax = np.sqrt(CD0/K)/(2*CD0)
+    
+    # Equations to be solved
+    CD0_exp = drag_object.CD0 - CD0
+    K_exp = drag_object.K - K
+    V1_exp = - V**2 + (T0*(sigma**n)/(sigma*rho0*jet.S*CD0))*(1 - np.sqrt(1 - 1/(Emax**2)*(jet.W**2/(T0*sigma**n)**2)))
+    V2_exp = - V**2 + (T0*(sigma**n)/(sigma*rho0*jet.S*CD0))*(1 + np.sqrt(1 - 1/(Emax**2)*(jet.W**2/(T0*sigma**n)**2)))
+
+    equations_V1 = [CD0_exp,K_exp,V1_exp]
+    equations_V2 = [CD0_exp,K_exp,V2_exp]
+    
+    if (V_type == 'V1'):
+        return equations_V1
+    elif (V_type == 'V2'):
+        return equations_V2
+    
+    #V_exp = (1/2)*sigma*rho0*jet.S*CD0*V**4 - T0*sigma**n*V**2 + (2*K*jet.W**2)/(sigma*rho0*jet.S) 
+    #equations = [V_exp,CD0_exp,K_exp]
+    #return equations   
+
+# Cruise velocity solver
+def cruise_velocity_solver(h,V_type):
+    
+    initial = (0.01,0.01,100)
+    [CD0_resp,K_resp,V_resp] = fsolve(cruise_velocity_eq, initial, args = (h,V_type))
+
+    return V_resp
     
 # Buoyancy (jet)
-def jet_buoyancy(h):
+def jet_buoyancy(h,T0):
     
     T = []
-    T0 = 64000
     
     for i in h:
         sigma = Atmosphere(i).density[0]/rho0
@@ -99,7 +130,7 @@ def TD_vs_V(V,D_total,T, Dmin):
             c=next(color)
             plt.plot(V,D_total[i], color = c)
             plt.plot(V,[T[i]]*len(V), label = 'T,D (h = {} [m])'.format(h[i]),color = c)
-            plt.plot(V,Dmin[i],'--k')
+            #plt.plot(V,Dmin[i],'--k')
     else:
         
         D_total = D_total[0]
@@ -107,7 +138,7 @@ def TD_vs_V(V,D_total,T, Dmin):
         
         plt.plot(V,D_total,'k', label = 'Drag')
         plt.plot(V,[T]*len(V), label = 'Thrust')
-        plt.plot(V,Dmin,'--k',label = 'Minimum Drag')
+        #plt.plot(V,Dmin,'--k',label = 'Minimum Drag')
         
 
     plt.legend(loc = 'best', framealpha = 1)
@@ -117,11 +148,15 @@ def TD_vs_V(V,D_total,T, Dmin):
 #%% MAIN
 
 n = 0.85
-h = [12000]
+h = [10000]
+T0 = 64000
 
 V = np.linspace(70,320,200)
 [D_total,Dmin] = total_drag(V,h)
-T = jet_buoyancy(h)
+T = jet_buoyancy(h,T0)
+
+V1 = cruise_velocity_solver(h,'V1')
+V2 = cruise_velocity_solver(h,'V2')
 
 
 # Figures:

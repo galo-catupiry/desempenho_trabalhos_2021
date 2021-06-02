@@ -89,26 +89,31 @@ def cruise_velocity_eq(x,h):
 # Cruise velocity solver
 def cruise_velocity_solver(V,h,V_type):
     
+    Vresp = []
     D_total = total_drag(V,h)[0]
     T = jet_buoyancy(h, T0)
-    d = T - D_total[0]
+    
+    for j in np.arange(0,len(h)):
         
-    for i in np.arange(0,len(D_total[0])-1):
-        if (d[i] < 0 and d[i+1] > 0):
-            V1_0 = V[i]
-            print(V1_0)
-        elif (d[i] > 0 and d[i+1] < 0):
-            V2_0 = V[i]
+        d = T[j] - D_total[j]
+            
+        for i in np.arange(0,len(D_total[0])-1):
+            if (d[i] < 0 and d[i+1] > 0):
+                V1_0 = V[i]
+            elif (d[i] > 0 and d[i+1] < 0):
+                V2_0 = V[i]
+        
+        
+        if (V_type == 'V1'):
+                initial = (0.01,0.01,V1_0)
+        elif (V_type == 'V2'):
+                initial = (0.01,0.01,V2_0)
+        
+        [CD0_resp,K_resp,V_resp] = fsolve(cruise_velocity_eq, initial, args = (h[j]))
+        
+        Vresp.append(V_resp)
     
-    
-    if (V_type == 'V1'):
-            initial = (0.01,0.01,V1_0)
-    elif (V_type == 'V2'):
-            initial = (0.01,0.01,V2_0)
-    
-    [CD0_resp,K_resp,V_resp] = fsolve(cruise_velocity_eq, initial, args = (h))
-    
-    return V_resp
+    return Vresp
     
 # Buoyancy (jet)
 def jet_buoyancy(h,T0):
@@ -131,7 +136,7 @@ def TD_vs_V(V,D_total,T, Dmin):
     plt.xlabel("Velocity [m/s]")
     plt.ylabel("T and D")
     plt.grid(True)
-    color=iter(plt.cm.rainbow(np.linspace(0,1,len(h))))
+    color=iter(plt.cm.brg(np.linspace(0,1,len(h))))
     
     if (len(h) > 1):    
         
@@ -154,13 +159,25 @@ def TD_vs_V(V,D_total,T, Dmin):
     plt.ylim(top = 40000)
     return
 
+def h_vs_V(V1,V2):
+    # EM CONSTRUÇÃO!!
+    
+    plt.figure(2)
+    plt.xlabel("Velocity [m/s]")
+    plt.ylabel("h [m]")
+    plt.grid(True)
+    plt.plot(V1,h,'k')
+    plt.plot(V2,h,'k')
+    #plt.legend(loc = 'best')
+    return
+
 #%% MAIN
 
 n = 0.85
-h = [9000]
+h = np.arange(0,14430,100).tolist()
 T0 = 64000
 
-V = np.linspace(70,320,200)
+V = np.linspace(0,320,200)
 [D_total,Dmin] = total_drag(V,h)
 T = jet_buoyancy(h,T0)
 
@@ -168,5 +185,7 @@ V1 = cruise_velocity_solver(V,h,'V1')
 V2 = cruise_velocity_solver(V,h,'V2')
 
 # Figures:
-figure_1 = TD_vs_V(V,D_total,T, Dmin)
+    
+#figure_1 = TD_vs_V(V,D_total,T, Dmin)
+figure_2 =  h_vs_V(V1,V2)
 

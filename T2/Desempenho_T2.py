@@ -125,6 +125,9 @@ def cruise_velocity_solver(V,h,V_type):
     D_total = total_drag(V,h)[0]
     T = jet_buoyancy(h, T0)
     
+    CD0_resp = 0.01
+    K_resp = 0.01
+    
     for j in np.arange(0,len(h)):
         
         d = T[j] - D_total[j]
@@ -137,9 +140,9 @@ def cruise_velocity_solver(V,h,V_type):
         
         
         if (V_type == 'V1'):
-                initial = (0.01,0.01,V1_0)
+                initial = (CD0_resp,K_resp,V1_0)
         elif (V_type == 'V2'):
-                initial = (0.01,0.01,V2_0)
+                initial = (CD0_resp,K_resp,V2_0)
         
         [CD0_resp,K_resp,V_resp] = fsolve(cruise_velocity_eq, initial, args = (h[j]))
         
@@ -268,9 +271,9 @@ if(Diagrama1):
     figure_1 = TD_vs_V(h_fig1,V_fig1,D_total_fig1,T_fig1, Dmin_fig1)
 
 # Diagrama h-V
-Diagrama2 = False
+Diagrama2 = True
 if(Diagrama2):
-    h_fig2 = np.arange(0,14430,200).tolist()
+    h_fig2 = np.arange(0,14800,10).tolist()
     V_fig2 = np.linspace(0,320,200)
     [D_total_fig2,Dmin_fig2] = total_drag(V_fig2,h_fig2)
     T_fig2 = jet_buoyancy(h_fig2,T0)

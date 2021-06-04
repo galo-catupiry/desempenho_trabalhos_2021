@@ -273,7 +273,7 @@ if(Diagrama1):
 # Diagrama h-V
 Diagrama2 = True
 if(Diagrama2):
-    h_fig2 = np.arange(0,14800,10).tolist()
+    h_fig2 = np.arange(0,14400,10).tolist()
     V_fig2 = np.linspace(0,320,200)
     [D_total_fig2,Dmin_fig2] = total_drag(V_fig2,h_fig2)
     T_fig2 = jet_buoyancy(h_fig2,T0)

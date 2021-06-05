@@ -20,7 +20,6 @@ from ambiance import Atmosphere
 from Interpolacao import DragPolar
 from aircraft import JetStar
 from scipy.optimize import fsolve
-from scipy.optimize import brentq
 
 plt.close('all')
 
@@ -74,7 +73,7 @@ def total_drag(V,h):
     
     return D_resp, Dmin_resp
 
-def cruise_velocity_eq(x,h):
+def cruise_velocity_eq(x,h,n,T0):
     '''
 
     Parâmetros
@@ -106,7 +105,7 @@ def cruise_velocity_eq(x,h):
     
     return equations   
     
-def cruise_velocity_solver(V,h,V_type):
+def cruise_velocity_solver(V,h,V_type,T0,n):
     '''
     
     Parâmetros
@@ -144,13 +143,13 @@ def cruise_velocity_solver(V,h,V_type):
         elif (V_type == 'V2'):
                 initial = (CD0_resp,K_resp,V2_0)
         
-        [CD0_resp,K_resp,V_resp] = fsolve(cruise_velocity_eq, initial, args = (h[j]))
+        [CD0_resp,K_resp,V_resp] = fsolve(cruise_velocity_eq, initial, args = (h[j],n,T0))
         
         Vresp.append(V_resp)
     
     return Vresp
     
-def jet_buoyancy(h,T0):
+def jet_buoyancy(h,T0,n):
     '''
 
     Parâmetros
@@ -231,7 +230,6 @@ def TD_vs_V(h,V,D_total,T, Dmin):
     return
 
 def h_vs_V(h,V1,V2):
-    # EM CONSTRUÇÃO!!
     
     plt.figure(2)
     plt.xlabel("Velocity [m/s]")
@@ -241,46 +239,5 @@ def h_vs_V(h,V1,V2):
     plt.plot(V2,h,'k')
     #plt.legend(loc = 'best')
     return
-
-#%% MAIN
-
-# -/----------------- Propulsão ------------------/-
-n = 0.85
-T0 = 64000
-c = 0.45  # (Verificar!)
-zeta = 0.45  #  (Verificar!)
-
-# -/-------- Análise de Alcance (Cruzeiro) -------/-
-V1_cru =  811 / 3.6
-h_cru = 13105
-
-x1 = cruise_range('h_CL',V1_cru,h_cru,c, zeta)
-x2 = cruise_range('V_CL',V1_cru,h_cru,c, zeta)
-x3 = cruise_range('V_h',V1_cru,h_cru,c, zeta)
-
-# -/--------- Parâmetros para diagramas ----------/-
-
-# Diagrama T,D vs. V
-Diagrama1 = False
-if(Diagrama1):
-    h_fig1 = [10000, 8000]
-    V_fig1 = np.linspace(70,320,200)
-    [D_total_fig1,Dmin_fig1] = total_drag(V_fig1,h_fig1)
-    T_fig1 = jet_buoyancy(h_fig1,T0)
-    
-    figure_1 = TD_vs_V(h_fig1,V_fig1,D_total_fig1,T_fig1, Dmin_fig1)
-
-# Diagrama h-V
-Diagrama2 = True
-if(Diagrama2):
-    h_fig2 = np.arange(0,14400,10).tolist()
-    V_fig2 = np.linspace(0,320,200)
-    [D_total_fig2,Dmin_fig2] = total_drag(V_fig2,h_fig2)
-    T_fig2 = jet_buoyancy(h_fig2,T0)
-    
-    V1_fig2 = cruise_velocity_solver(V_fig2,h_fig2,'V1')
-    V2_fig2 = cruise_velocity_solver(V_fig2,h_fig2,'V2')
-    
-    figure_2 =  h_vs_V(h_fig2,V1_fig2,V2_fig2)
 
 

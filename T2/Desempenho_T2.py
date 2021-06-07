@@ -80,6 +80,8 @@ def cruise_velocity_eq(x,h,n,T0):
     ----------
     x : Variável do sistema
     h : Altura analisada (lista)
+    n: Coeficiente propulsivo
+    T0: Empuxo dos quatro motores ao nível do mar
 
     Retorna
     -------
@@ -113,6 +115,9 @@ def cruise_velocity_solver(V,h,V_type,T0,n):
     V : Lista de velocidades definida em "MAIN".
     h : Lista de altitudes definida em "MAIN".
     V_type : Define a análise para V1 ou V2.
+    T0: Empuxo dos quatro motores ao nível do mar
+    n: Coeficiente propulsivo
+    
 
     Returns
     -------
@@ -156,6 +161,7 @@ def jet_buoyancy(h,T0,n):
     ----------
     h : Lista de altitudes definida em "MAIN".
     T0 : Empuxo dos quatro motores da aeronave ao nível do mar
+    n: Coeficiente propulsivo
 
     Returns
     -------
@@ -172,11 +178,31 @@ def jet_buoyancy(h,T0,n):
     
     return T
 
-def cruise_range(cond,V1,h,c, zeta):
+def cruise_range(cond,V1,h,c, zeta,W):
+    '''
+    OBS: Inutilizado! (remover antes de entregar)
+    Parâmetros
+    ----------
+    cond : Tipo de voo de cruzeiro, especificando qual variável
+    se manterá constante: Velocidade (V), h (altitude) ou CL;
+    
+    V1 : Velocidade de início; 
+    
+    h : Altitude de cruzeiro;
+    
+    c : Coeficiente de consumo;
+    
+    zeta : Razão W1/W2 dos pesos inicial e final. 
+
+    Returns
+    -------
+    x : Alcance, em metros.
+
+    '''
     drag_cru = DragPolar()
     rho = Atmosphere(h).density[0]
     
-    CL_cru = (2*jet.W)/(rho*V1**2*jet.S)
+    CL_cru = (2*W)/(rho*V1**2*jet.S)
     drag_cru.CLp = CL_cru
     drag_cru.Mp = V1/Atmosphere(h).speed_of_sound[0]
     CD1 = drag_cru.polar()
@@ -193,13 +219,50 @@ def cruise_range(cond,V1,h,c, zeta):
         x = E1*V1/c*np.log(1/(1 - zeta))
         
     elif(cond == 'V_h'):
-       
-        x = (2*V1*Em)/c*np.arctan(E1*zeta/(2*Em*(1 - drag_cru.K*E1*CL_cru*zeta)))
         
+        x = (2*V1*Em)/c*np.arctan(E1*zeta/(2*Em*(1 - drag_cru.K*E1*CL_cru*zeta)))
+       
     return x
 
-#%% Plots for Cruise Flight
+def cruise_range_new(cond,W,c,zeta):
+    drag_cru = DragPolar()
+    x_list = []
+    
+    for V1 in np.linspace(100,250,150,endpoint= True):
+        for h in np.linspace(10000,15000,20,endpoint = True):
+            rho = Atmosphere(h).density[0]
+            
+            CL_cru = (2*W)/(rho*V1**2*jet.S)
+            drag_cru.CLp = CL_cru
+            drag_cru.Mp = V1/Atmosphere(h).speed_of_sound[0]
+            CD1 = drag_cru.polar()
+            
+            E1 = CL_cru/CD1
+            Em = 4*drag_cru.K/drag_cru.CD0
+            
+            if(cond == 'h_CL'):
+        
+                x = (2*V1*E1)/c*(1-np.sqrt(1 - zeta))
+                x_list.append(x)
+                
+            elif(cond == 'V_CL'):
+        
+                x = E1*V1/c*np.log(1/(1 - zeta))
+                x_list.append(x)
+                
+            elif(cond == 'V_h'):
+                x = (2*V1*Em)/c*np.arctan(E1*zeta/(2*Em*(1 - drag_cru.K*E1*CL_cru*zeta)))
+                x_list.append(x)
+    print(x_list.index(max(x_list)))
+    
+    return max(x_list)
+#%% Funções para Voo Ascendente
 
+
+
+#%% Gráficos
+
+# Cruzeiro:
 def TD_vs_V(h,V,D_total,T, Dmin):
     
     plt.figure(1)
@@ -240,4 +303,38 @@ def h_vs_V(h,V1,V2):
     #plt.legend(loc = 'best')
     return
 
+# Gerais:
+def payload_vs_range(V1,h,c,POV,MTOW,max_payload,max_fuel):
+    
+    aux1 = max_fuel - (MTOW - (POV + max_payload))  # Combustível excedente
+    aux2 = max_payload - aux1  # Carga Paga no ponto C
+    
+    # Alcance nos pontos principais:
+    x_A = 0
+    '''
+    x_B = cruise_range('V_h',V1,h,c, (MTOW - (POV + max_payload))/MTOW , MTOW)
+    x_C = cruise_range('V_h',V1,h,c, max_fuel/MTOW,MTOW)
+    x_D = cruise_range('V_h',V1,h,c, max_fuel/(MTOW - aux2 ), MTOW - aux2)
+    '''
+    x_B = cruise_range_new('V_h',MTOW, c, (MTOW - (POV + max_payload))/MTOW)
+    x_C = cruise_range_new('V_h',MTOW, c, max_fuel/MTOW)
+    x_D = cruise_range_new('V_h',MTOW - aux2, c, max_fuel/(MTOW - aux2 ))
+    # Ponto A:
+    A = [x_A,max_payload]
+    # Ponto B:
+    B = [x_B,max_payload]
+    # Ponto C:
+    C = [x_C, aux2]
+    # Ponto D:
+    D = [x_D, 0]
+    
+    plt.figure(3)
+    plt.ylabel("$W_{payload}\: [N]$", fontsize = 12)
+    plt.xlabel("x [m]", fontsize = 12)
+    plt.grid(True)
+    plt.plot([A[0],B[0]],[A[1],B[1]],'r')
+    plt.plot([B[0],C[0]],[B[1],C[1]],'k')
+    plt.plot([C[0],D[0]],[C[1],D[1]],'r')
+    
+    return
 

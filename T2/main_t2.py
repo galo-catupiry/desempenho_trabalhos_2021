@@ -16,27 +16,35 @@ sys.path.append(parent_dir)
 
 import numpy as np
 import Desempenho_T2 as DT2
+from aircraft import JetStar
 
 #%% MAIN
+jet = JetStar(1)
 
-# -/----------------- Propuls√£o ------------------/-
+# -/----------------- Propuls„o ------------------/-
 n = 0.85
 T0 = 64000
-c = 0.45  # (Verificar!)
-zeta = 0.45  #  (Verificar!)
+c = 0.0133  # (Verificar!)
+#zeta = 0.45  #  (Verificar!)
 
-# -/-------- An√°lise de Alcance (Cruzeiro) -------/-
+# -/--------------- Pesos -----------------------/-
+POV = 11566*9.81             # Peso vazio operacional, [N] 
+MTOW = 20071.446*9.81        # Peso m·ximo de decolagem, [N]  
+max_payload = 907.2*9.81     # M·xima carga paga, [N]
+max_fuel = 8149.233872*9.81  # M·xima qtde. de combustÌvel, [N]
+
+# -/-------- An·lise de Alcance (Cruzeiro) -------/-
 V1_cru =  811 / 3.6
 h_cru = 13105
 
-x1 = DT2.cruise_range('h_CL',V1_cru,h_cru,c, zeta)
-x2 = DT2.cruise_range('V_CL',V1_cru,h_cru,c, zeta)
-x3 = DT2.cruise_range('V_h',V1_cru,h_cru,c, zeta)
-
-# -/--------- Par√¢metros para diagramas ----------/-
+x1 = DT2.cruise_range_new('h_CL',MTOW, c, max_fuel/MTOW)
+x2 = DT2.cruise_range_new('V_CL',MTOW, c, max_fuel/MTOW)
+x3 = DT2.cruise_range_new('V_h', MTOW, c, max_fuel/MTOW)
+#x = DT2.cruise_range_new('V_h',jet.W, c, max_fuel/MTOW)
+# -/--------- Par‚metros para diagramas ----------/-
 
 # Diagrama T,D vs. V
-Diagrama1 = True
+Diagrama1 = False
 if(Diagrama1):
     h_fig1 = [10000]
     V_fig1 = np.linspace(70,320,200)
@@ -57,3 +65,8 @@ if(Diagrama2):
     V2_fig2 = DT2.cruise_velocity_solver(V_fig2,h_fig2,'V2',T0,n)
     
     figure_2 =  DT2.h_vs_V(h_fig2,V1_fig2,V2_fig2)
+
+# Carga Paga vs. Alcance
+Diagrama3 = False
+if(Diagrama3):
+     figure3 = DT2.payload_vs_range(V1_cru,h_cru,c,POV,MTOW,max_payload,max_fuel)

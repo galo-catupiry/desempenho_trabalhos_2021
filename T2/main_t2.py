@@ -1,5 +1,5 @@
 """
-T2 - SAA0183 - CÃ³digo Principal
+T2 - SAA0183 - Código Principal
 
 Grupo E:
     Abner Micael de Paula Souza - 10788676
@@ -8,7 +8,7 @@ Grupo E:
     Thiago Buchignani De Amicis - 10277418
 """
 
-#%%Bibliotecas
+#%% Bibliotecas
 import os, sys
 current_dir = os.path.dirname(os.path.realpath(__file__))
 parent_dir = os.path.dirname(current_dir)
@@ -22,26 +22,32 @@ from aircraft import JetStar
 jet = JetStar(1)
 
 # -/----------------- Propulsão ------------------/-
+
 n = 0.85
 T0 = 64000
 c = 0.0133  # (Verificar!)
-#zeta = 0.45  #  (Verificar!)
 
 # -/--------------- Pesos -----------------------/-
+
 POV = 11566*9.81             # Peso vazio operacional, [N] 
 MTOW = 20071.446*9.81        # Peso máximo de decolagem, [N]  
 max_payload = 907.2*9.81     # Máxima carga paga, [N]
 max_fuel = 8149.233872*9.81  # Máxima qtde. de combustível, [N]
 
 # -/-------- Análise de Alcance (Cruzeiro) -------/-
-V1_cru =  811 / 3.6
-h_cru = 13105
 
 x1 = DT2.cruise_range_new('h_CL',MTOW, c, max_fuel/MTOW)
 x2 = DT2.cruise_range_new('V_CL',MTOW, c, max_fuel/MTOW)
 x3 = DT2.cruise_range_new('V_h', MTOW, c, max_fuel/MTOW)
-#x = DT2.cruise_range_new('V_h',jet.W, c, max_fuel/MTOW)
-# -/--------- Parâmetros para diagramas ----------/-
+
+# -/------------- Tetos da Aeronave ------------/-
+
+V = np.linspace(50,320,600)
+h = np.arange(0,14400,10).tolist()
+tol = 0.015
+resp = DT2.ceiling(h, T0, n, jet.W, V,tol)
+
+#%% -/--------- Diagramas de Desempenho ----------/-
 
 # Diagrama T,D vs. V
 Diagrama1 = False
@@ -69,4 +75,18 @@ if(Diagrama2):
 # Carga Paga vs. Alcance
 Diagrama3 = False
 if(Diagrama3):
-     figure3 = DT2.payload_vs_range(V1_cru,h_cru,c,POV,MTOW,max_payload,max_fuel)
+    figure3 = DT2.payload_vs_range(c,POV,MTOW,max_payload,max_fuel)
+    
+# Ângulo de subida vs. Velocidade
+Diagrama4 = False
+if(Diagrama4):
+    V_fig3 = np.linspace(0,320,200)
+    h = [10000]
+    figure4 = DT2.gamma_graph(h, T0, n, jet.W,V_fig3)
+
+# Razão de subida vs. Velocidade
+Diagrama5 = True
+if(Diagrama5):
+    h = [10000]
+    figure5 = DT2.h_dot_vs_velocity(h, T0, n, jet.W)
+     

@@ -127,7 +127,7 @@ def cruise_velocity_solver(V,h,V_type,T0,n):
     
     Vresp = []
     D_total = total_drag(V,h)[0]
-    T = jet_buoyancy(h, T0)
+    T = jet_buoyancy(h, T0,n)
     
     CD0_resp = 0.01
     K_resp = 0.01
@@ -253,12 +253,51 @@ def cruise_range_new(cond,W,c,zeta):
             elif(cond == 'V_h'):
                 x = (2*V1*Em)/c*np.arctan(E1*zeta/(2*Em*(1 - drag_cru.K*E1*CL_cru*zeta)))
                 x_list.append(x)
-    print(x_list.index(max(x_list)))
     
     return max(x_list)
+
 #%% Funções para Voo Ascendente
 
+def gamma(h,T0,n,W,V):
+    
+    T = jet_buoyancy(h, T0, n)[0]
+    D = total_drag(V, h)[0][0]
+    return (T - D)/W
 
+def h_dot(h,T0,n,W,V):
+    
+    T = jet_buoyancy(h, T0, n)[0]
+    D = total_drag(V, h)[0][0]
+    h_dot = (T*V - D*V)/W
+    
+    return h_dot
+
+def ceiling(h,T0,n,W,V,tol):
+    
+    for i in h:
+        aux = h_dot([i], T0, n, W, V)
+        h_dot_max = max(aux)
+        
+        if (abs(h_dot_max - 1.524) <= tol):
+            print("Teto operacional: h = {:.2f}".format(i))
+            #operating_ceiling = i
+            
+        elif (abs(h_dot_max - 0.508) <= tol):
+            print("Teto de serviço: h = {:.2f}".format(i))
+            #service_ceiling = i
+            
+        elif(abs(h_dot_max) <= tol):
+            print("Teto absoluto: h = {:.2f}".format(i))
+            #absolute_ceiling = i
+    
+    return 
+
+# TODO: parâmetros ótimos
+def optimal_parameters():
+    
+    # Vel. para máxima razão de subida
+    
+    return
 
 #%% Gráficos
 
@@ -294,6 +333,8 @@ def TD_vs_V(h,V,D_total,T, Dmin):
 
 def h_vs_V(h,V1,V2):
     
+    plt.style.use('tableau-colorblind10')
+    
     plt.figure(2)
     plt.xlabel("Velocity [m/s]")
     plt.ylabel("h [m]")
@@ -304,37 +345,79 @@ def h_vs_V(h,V1,V2):
     return
 
 # Gerais:
-def payload_vs_range(V1,h,c,POV,MTOW,max_payload,max_fuel):
+def payload_vs_range(c,POV,MTOW,max_payload,max_fuel):
     
     aux1 = max_fuel - (MTOW - (POV + max_payload))  # Combustível excedente
     aux2 = max_payload - aux1  # Carga Paga no ponto C
     
     # Alcance nos pontos principais:
     x_A = 0
-    '''
-    x_B = cruise_range('V_h',V1,h,c, (MTOW - (POV + max_payload))/MTOW , MTOW)
-    x_C = cruise_range('V_h',V1,h,c, max_fuel/MTOW,MTOW)
-    x_D = cruise_range('V_h',V1,h,c, max_fuel/(MTOW - aux2 ), MTOW - aux2)
-    '''
     x_B = cruise_range_new('V_h',MTOW, c, (MTOW - (POV + max_payload))/MTOW)
     x_C = cruise_range_new('V_h',MTOW, c, max_fuel/MTOW)
     x_D = cruise_range_new('V_h',MTOW - aux2, c, max_fuel/(MTOW - aux2 ))
+    
     # Ponto A:
-    A = [x_A,max_payload]
+    A = [x_A/1000,max_payload/1000]
     # Ponto B:
-    B = [x_B,max_payload]
+    B = [x_B/1000,max_payload/1000]
     # Ponto C:
-    C = [x_C, aux2]
+    C = [x_C/1000, aux2/1000]
     # Ponto D:
-    D = [x_D, 0]
+    D = [x_D/1000, 0/1000]
+    
+    plt.style.use('dark_background')
     
     plt.figure(3)
-    plt.ylabel("$W_{payload}\: [N]$", fontsize = 12)
-    plt.xlabel("x [m]", fontsize = 12)
-    plt.grid(True)
-    plt.plot([A[0],B[0]],[A[1],B[1]],'r')
-    plt.plot([B[0],C[0]],[B[1],C[1]],'k')
-    plt.plot([C[0],D[0]],[C[1],D[1]],'r')
+    plt.ylabel("Payload [kN]", fontsize = 12)
+    plt.xlabel("x [km]", fontsize = 12)
+    plt.grid(False)
+    plt.plot([A[0],B[0]],[A[1],B[1]],'-or',linewidth = 3)
+    plt.plot([B[0],C[0]],[B[1],C[1]],'-or',linewidth = 3)
+    plt.plot([C[0],D[0]],[C[1],D[1]],'-or',linewidth = 3)
+    plt.show()
     
     return
 
+def gamma_graph(h,T0,n,W,V):
+    
+    plt.style.use('ggplot')
+    
+    plt.figure(4)
+    plt.ylabel("$\\gamma$", fontsize = 12)
+    plt.xlabel("Velocity [m/s]", fontsize = 12)
+    plt.grid(True)
+    
+    V1 = cruise_velocity_solver(V, h, 'V1', T0, n)
+    V2 = cruise_velocity_solver(V, h, 'V2', T0, n)
+    
+    V_plot = np.linspace(V1,V2,300,endpoint=True)
+    plt.plot(V_plot,gamma(h,T0,n,W,V_plot),color = 'purple')
+    plt.show()
+
+    return
+
+def h_dot_vs_velocity(h, T0, n, W):
+    
+    plt.style.use('ggplot')
+    
+    plt.figure(5)
+    plt.ylabel("$\dot{h} \:\: [m/s]$",fontsize = 12)
+    plt.xlabel("Velocity  [m/s]",fontsize = 12)
+    plt.grid(True)
+    
+    V = np.linspace(0,320,200)
+    V1 = cruise_velocity_solver(V, h, 'V1', T0, n)
+    V2 = cruise_velocity_solver(V, h, 'V2', T0, n)
+    
+    gamma_list = gamma(h,T0,n,W,V)
+    gamma_max = max(gamma_list)   
+    
+    plt.plot(V[:170], V[:170]*gamma_max,"--k", label = '$\gamma_{máx}$')
+      
+    V_plot = np.linspace(V1,V2,300,endpoint=True)
+    plt.plot(V_plot, h_dot(h, T0, n, W, V_plot),color = 'purple')
+    legend = plt.legend(loc = 'best', framealpha = 1)
+    plt.setp(legend.get_texts(), color='k')
+    plt.show()
+    
+    return

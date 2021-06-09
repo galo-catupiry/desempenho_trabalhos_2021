@@ -296,7 +296,7 @@ def ceiling(h,T0,n,W,V,tol):
 def optimal_parameters():
     
     # Vel. para máxima razão de subida
-    
+     
     return
 
 #%% Gráficos

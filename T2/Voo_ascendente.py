@@ -14,9 +14,7 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
 from aircraft import JetStar
-from Interpolacao import DragPolar
 import numpy as np
-from scipy.optimize import fsolve
 import matplotlib.pyplot as plt
 from ambiance import Atmosphere
 

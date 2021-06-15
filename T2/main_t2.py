@@ -14,10 +14,12 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
 import numpy as np
+import matplotlib.pyplot as plt
+
 import Cruzeiro as cr
 import Voo_ascendente as v_asc
+import Manobras as manobras
 from aircraft import JetStar
-import matplotlib.pyplot as plt
 
 plt.close('all')
 # =============================================  
@@ -51,11 +53,13 @@ resp = v_asc.ceiling(h, T0, n, jet.W, V,tol)
 # Diagrama T,D vs. V
 fig1 = False
 if(fig1):
-    h_fig1 = [10000]
+    
+    h_fig1 = [13105]
     V_fig1 = np.linspace(70,320,200)
-    [D_total_fig1,Dmin_fig1] = cr.total_drag(V_fig1,h_fig1)
     T_fig1 = cr.jet_buoyancy(h_fig1,T0,n)
     
+    [D_total_fig1,Dmin_fig1] = cr.total_drag(V_fig1,h_fig1)
+
     figure_1 = cr.TD_vs_V(h_fig1,V_fig1,D_total_fig1,T_fig1, Dmin_fig1)
 
 # Diagrama h-V
@@ -74,18 +78,41 @@ if(fig2):
 # Carga Paga vs. Alcance
 fig3 = False
 if(fig3):
-    figure3 = cr.payload_vs_range(c,POV,MTOW,max_payload,max_fuel)
+    figure_3 = cr.payload_vs_range(c,POV,MTOW,max_payload,max_fuel)
     
 # Angulo de subida vs. Velocidade
 fig4 = False
 if(fig4):
     V_fig3 = np.linspace(0,320,200)
     h = [10000]
-    figure4 = v_asc.gamma_graph(h, T0, n, jet.W,V_fig3)
+    figure_4 = v_asc.gamma_graph(h, T0, n, jet.W,V_fig3)
 
 # Razao de subida vs. Velocidade
 fig5 = False
 if(fig5):
     h = [10000]
-    figure5 = v_asc.h_dot_vs_velocity(h, T0, n, jet.W)
-     
+    figure_5 = v_asc.h_dot_vs_velocity(h, T0, n, jet.W)
+
+# Diagrama T,D vs. V para curva coordenada
+fig6 = False
+if(fig6):
+    
+    h_fig6 = [10000]
+    fc_fig6 = np.linspace(1,1.75, 5, endpoint = True)
+    V_fig6 = np.linspace(70,320,200)
+    
+    T_manobra = manobras.T(h_fig6, T0, n, fc_fig6)
+    D_manobra = manobras.drag(V_fig6, h_fig6, fc_fig6)
+    
+    figure_6 = manobras.TD_vs_V_manobras(h_fig6, fc_fig6, V_fig6, D_manobra, T_manobra)
+
+# Diagrama de desempenho em curva
+fig7 = True
+if(fig7):
+    
+    V_fig7 = np.linspace(50,320,200)
+    fc_fig7 = np.linspace(1,5, 5, endpoint = True)
+    R_fig7 = np.linspace(500,3000,4, endpoint = True)
+    omega = manobras.omega(fc_fig7, V_fig7)
+    
+    figure_7 = manobras.omega_vs_V(V_fig7, omega, fc_fig7, R_fig7) 

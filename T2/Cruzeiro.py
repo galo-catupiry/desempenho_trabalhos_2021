@@ -214,7 +214,7 @@ def TD_vs_V(h,V,D_total,T, Dmin):
     plt.figure(1)
     plt.style.use('default')
     plt.xlabel("Velocity [m/s]")
-    plt.ylabel("T and D [kN]")
+    plt.ylabel("T and D [N]")
     plt.grid(True)
     color=iter(plt.cm.brg(np.linspace(0,1,len(h))))
     
@@ -237,6 +237,7 @@ def TD_vs_V(h,V,D_total,T, Dmin):
 
     plt.legend(loc = 'best', framealpha = 1)
     plt.ylim(top = 40000)
+    plt.show()
     return
 
 def h_vs_V(h,V1,V2):

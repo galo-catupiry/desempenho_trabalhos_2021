@@ -1,5 +1,5 @@
 """
-Cálculo dos parâmetros de desempenho - T2
+Análise de Voo em Cruzeiro - T2
 
 Integrantes:
     Abner Micael de Paula Souza - 10788676
@@ -7,30 +7,26 @@ Integrantes:
     Guilherme Beppu de Souza    - 10696681
     Thiago Buchignani De Amicis - 10277418
 """
-
-#%% Bibliotecas
+# =============================================
 import os, sys
 current_dir = os.path.dirname(os.path.realpath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
+from aircraft import JetStar
+from Interpolacao import DragPolar
 import numpy as np
+from scipy.optimize import fsolve
 import matplotlib.pyplot as plt
 from ambiance import Atmosphere
-from Interpolacao import DragPolar
-from aircraft import JetStar
-from scipy.optimize import fsolve
 
-plt.close('all')
-
-#%% Dados Gerais
+# ============================================= 
 jet = JetStar(1)
 
 sealevel = Atmosphere(0)
 beta = 9296
 rho0 = sealevel.density[0]
-
-#%% Funções para Voo em Cruzeiro
+# =============================================  
 
 # Polar de arrasto
 drag_object = DragPolar()
@@ -178,52 +174,6 @@ def jet_buoyancy(h,T0,n):
     
     return T
 
-def cruise_range(cond,V1,h,c, zeta,W):
-    '''
-    OBS: Inutilizado! (remover antes de entregar)
-    Parâmetros
-    ----------
-    cond : Tipo de voo de cruzeiro, especificando qual variável
-    se manterá constante: Velocidade (V), h (altitude) ou CL;
-    
-    V1 : Velocidade de início; 
-    
-    h : Altitude de cruzeiro;
-    
-    c : Coeficiente de consumo;
-    
-    zeta : Razão W1/W2 dos pesos inicial e final. 
-
-    Returns
-    -------
-    x : Alcance, em metros.
-
-    '''
-    drag_cru = DragPolar()
-    rho = Atmosphere(h).density[0]
-    
-    CL_cru = (2*W)/(rho*V1**2*jet.S)
-    drag_cru.CLp = CL_cru
-    drag_cru.Mp = V1/Atmosphere(h).speed_of_sound[0]
-    CD1 = drag_cru.polar()
-    
-    E1 = CL_cru/CD1
-    Em = 4*drag_cru.K/drag_cru.CD0
-    
-    if(cond == 'h_CL'):
-        
-        x = (2*V1*E1)/c*(1-np.sqrt(1 - zeta))
-    
-    elif(cond == 'V_CL'):
-        
-        x = E1*V1/c*np.log(1/(1 - zeta))
-        
-    elif(cond == 'V_h'):
-        
-        x = (2*V1*Em)/c*np.arctan(E1*zeta/(2*Em*(1 - drag_cru.K*E1*CL_cru*zeta)))
-       
-    return x
-
 def cruise_range_new(cond,W,c,zeta):
     drag_cru = DragPolar()
     x_list = []
@@ -256,57 +206,15 @@ def cruise_range_new(cond,W,c,zeta):
     
     return max(x_list)
 
-#%% Funções para Voo Ascendente
+# ============================================= 
+# Gráficos
 
-def gamma(h,T0,n,W,V):
-    
-    T = jet_buoyancy(h, T0, n)[0]
-    D = total_drag(V, h)[0][0]
-    return (T - D)/W
-
-def h_dot(h,T0,n,W,V):
-    
-    T = jet_buoyancy(h, T0, n)[0]
-    D = total_drag(V, h)[0][0]
-    h_dot = (T*V - D*V)/W
-    
-    return h_dot
-
-def ceiling(h,T0,n,W,V,tol):
-    
-    for i in h:
-        aux = h_dot([i], T0, n, W, V)
-        h_dot_max = max(aux)
-        
-        if (abs(h_dot_max - 1.524) <= tol):
-            print("Teto operacional: h = {:.2f}".format(i))
-            #operating_ceiling = i
-            
-        elif (abs(h_dot_max - 0.508) <= tol):
-            print("Teto de serviço: h = {:.2f}".format(i))
-            #service_ceiling = i
-            
-        elif(abs(h_dot_max) <= tol):
-            print("Teto absoluto: h = {:.2f}".format(i))
-            #absolute_ceiling = i
-    
-    return 
-
-# TODO: parâmetros ótimos
-def optimal_parameters():
-    
-    # Vel. para máxima razão de subida
-    
-    return
-
-#%% Gráficos
-
-# Cruzeiro:
 def TD_vs_V(h,V,D_total,T, Dmin):
     
     plt.figure(1)
+    plt.style.use('default')
     plt.xlabel("Velocity [m/s]")
-    plt.ylabel("T and D")
+    plt.ylabel("T and D [kN]")
     plt.grid(True)
     color=iter(plt.cm.brg(np.linspace(0,1,len(h))))
     
@@ -324,7 +232,7 @@ def TD_vs_V(h,V,D_total,T, Dmin):
         
         plt.plot(V,D_total,'k', label = 'Drag')
         plt.plot(V,[T]*len(V), label = 'Thrust')
-        plt.plot(V,Dmin,'--k',label = 'Minimum Drag')
+        #plt.plot(V,Dmin,'--k',label = 'Minimum Drag')
         
 
     plt.legend(loc = 'best', framealpha = 1)
@@ -333,14 +241,16 @@ def TD_vs_V(h,V,D_total,T, Dmin):
 
 def h_vs_V(h,V1,V2):
     
+    h_plot = [i*3.28084 for i in h]
+    
     plt.style.use('tableau-colorblind10')
     
     plt.figure(2)
     plt.xlabel("Velocity [m/s]")
-    plt.ylabel("h [m]")
+    plt.ylabel("h [ft]")
     plt.grid(True)
-    plt.plot(V1,h,'k')
-    plt.plot(V2,h,'k')
+    plt.plot(V1,h_plot,'k')
+    plt.plot(V2,h_plot,'k')
     #plt.legend(loc = 'best')
     return
 
@@ -357,67 +267,23 @@ def payload_vs_range(c,POV,MTOW,max_payload,max_fuel):
     x_D = cruise_range_new('V_h',MTOW - aux2, c, max_fuel/(MTOW - aux2 ))
     
     # Ponto A:
-    A = [x_A/1000,max_payload/1000]
+    A = [x_A/1000,max_payload/9.81]
     # Ponto B:
-    B = [x_B/1000,max_payload/1000]
+    B = [x_B/1000,max_payload/9.81]
     # Ponto C:
-    C = [x_C/1000, aux2/1000]
+    C = [x_C/1000, aux2/9.81]
     # Ponto D:
-    D = [x_D/1000, 0/1000]
+    D = [x_D/1000, 0/9.81]
     
     plt.style.use('dark_background')
     
     plt.figure(3)
-    plt.ylabel("Payload [kN]", fontsize = 12)
+    plt.ylabel("Payload [kg]", fontsize = 12)
     plt.xlabel("x [km]", fontsize = 12)
     plt.grid(False)
     plt.plot([A[0],B[0]],[A[1],B[1]],'-or',linewidth = 3)
     plt.plot([B[0],C[0]],[B[1],C[1]],'-or',linewidth = 3)
     plt.plot([C[0],D[0]],[C[1],D[1]],'-or',linewidth = 3)
-    plt.show()
-    
-    return
-
-def gamma_graph(h,T0,n,W,V):
-    
-    plt.style.use('ggplot')
-    
-    plt.figure(4)
-    plt.ylabel("$\\gamma$", fontsize = 12)
-    plt.xlabel("Velocity [m/s]", fontsize = 12)
-    plt.grid(True)
-    
-    V1 = cruise_velocity_solver(V, h, 'V1', T0, n)
-    V2 = cruise_velocity_solver(V, h, 'V2', T0, n)
-    
-    V_plot = np.linspace(V1,V2,300,endpoint=True)
-    plt.plot(V_plot,gamma(h,T0,n,W,V_plot),color = 'purple')
-    plt.show()
-
-    return
-
-def h_dot_vs_velocity(h, T0, n, W):
-    
-    plt.style.use('ggplot')
-    
-    plt.figure(5)
-    plt.ylabel("$\dot{h} \:\: [m/s]$",fontsize = 12)
-    plt.xlabel("Velocity  [m/s]",fontsize = 12)
-    plt.grid(True)
-    
-    V = np.linspace(0,320,200)
-    V1 = cruise_velocity_solver(V, h, 'V1', T0, n)
-    V2 = cruise_velocity_solver(V, h, 'V2', T0, n)
-    
-    gamma_list = gamma(h,T0,n,W,V)
-    gamma_max = max(gamma_list)   
-    
-    plt.plot(V[:170], V[:170]*gamma_max,"--k", label = '$\gamma_{máx}$')
-      
-    V_plot = np.linspace(V1,V2,300,endpoint=True)
-    plt.plot(V_plot, h_dot(h, T0, n, W, V_plot),color = 'purple')
-    legend = plt.legend(loc = 'best', framealpha = 1)
-    plt.setp(legend.get_texts(), color='k')
     plt.show()
     
     return

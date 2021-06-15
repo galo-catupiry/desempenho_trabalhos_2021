@@ -1,5 +1,5 @@
 """
-T2 - SAA0183 - Código Principal
+T2 - SAA0183 - Codigo Principal
 
 Grupo E:
     Abner Micael de Paula Souza - 10788676
@@ -17,22 +17,24 @@ import numpy as np
 import Cruzeiro as cr
 import Voo_ascendente as v_asc
 from aircraft import JetStar
+import matplotlib.pyplot as plt
 
+plt.close('all')
 # =============================================  
 jet = JetStar(1)
 
-# Propulsão
+# Propulsao
 n = 0.85
 T0 = 64000
-c = 0.0133
+c = 0.5/3600
 
 # Pesos
 POV = 11566*9.81             # Peso vazio operacional, [N] 
-MTOW = 20071.446*9.81        # Peso máximo de decolagem, [N]  
-max_payload = 907.2*9.81     # Máxima carga paga, [N]
-max_fuel = 8149.233872*9.81  # Máxima qtde. de combustível, [N]
+MTOW = 20071.446*9.81        # Peso maximo de decolagem, [N]  
+max_payload = 907.2*9.81     # Maxima carga paga, [N]
+max_fuel = 8149.233872*9.81  # Maxima qtde. de combustivel, [N]
 
-# Análise de Alcance (Cruzeiro)
+# Analise de Alcance (Cruzeiro)
 x1 = cr.cruise_range_new('h_CL',MTOW, c, max_fuel/MTOW)
 x2 = cr.cruise_range_new('V_CL',MTOW, c, max_fuel/MTOW)
 x3 = cr.cruise_range_new('V_h', MTOW, c, max_fuel/MTOW)
@@ -44,10 +46,10 @@ tol = 0.015
 resp = v_asc.ceiling(h, T0, n, jet.W, V,tol)
 
 # =============================================  
-# Gráficos
+# Graficos
 
 # Diagrama T,D vs. V
-fig1 = True
+fig1 = False
 if(fig1):
     h_fig1 = [10000]
     V_fig1 = np.linspace(70,320,200)
@@ -74,16 +76,16 @@ fig3 = False
 if(fig3):
     figure3 = cr.payload_vs_range(c,POV,MTOW,max_payload,max_fuel)
     
-# Ângulo de subida vs. Velocidade
+# Angulo de subida vs. Velocidade
 fig4 = False
 if(fig4):
     V_fig3 = np.linspace(0,320,200)
     h = [10000]
     figure4 = v_asc.gamma_graph(h, T0, n, jet.W,V_fig3)
 
-# Razão de subida vs. Velocidade
-fig5 = True
+# Razao de subida vs. Velocidade
+fig5 = False
 if(fig5):
-    h = [12000]
+    h = [10000]
     figure5 = v_asc.h_dot_vs_velocity(h, T0, n, jet.W)
      

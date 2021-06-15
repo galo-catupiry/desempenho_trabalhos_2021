@@ -1,5 +1,5 @@
 """
-Análise de Voo Ascendente - T2
+Analise de Voo Ascendente - T2
 
 Integrantes:
     Abner Micael de Paula Souza - 10788676
@@ -8,6 +8,11 @@ Integrantes:
     Thiago Buchignani De Amicis - 10277418
 """
 # =============================================
+import os, sys
+current_dir = os.path.dirname(os.path.realpath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
+
 from aircraft import JetStar
 from Interpolacao import DragPolar
 import numpy as np
@@ -46,35 +51,35 @@ def ceiling(h,T0,n,W,V,tol):
         h_dot_max = max(aux)
         
         if (abs(h_dot_max - 1.524) <= tol):
-            print("Teto operacional: h = {:.2f}".format(i))
+            print("Teto operacional: h = {:.2f} [ft]".format(i*3.28084))
             #operating_ceiling = i
             
         elif (abs(h_dot_max - 0.508) <= tol):
-            print("Teto de serviço: h = {:.2f}".format(i))
+            print("Teto de servico: h = {:.2f} [ft]".format(i*3.28084))
             #service_ceiling = i
             
         elif(abs(h_dot_max) <= tol):
-            print("Teto absoluto: h = {:.2f}".format(i))
+            print("Teto absoluto: h = {:.2f} [ft]".format(i*3.28084))
             #absolute_ceiling = i
     
     return 
 
-# TODO: parâmetros ótimos
+# TODO: Parametros otimos
 def optimal_parameters():
     
-    # Vel. para máxima razão de subida
+    # Vel. para maxima razao de subida
      
     return
 
 # =============================================
-# Gráficos
+# Graficos
 
 def gamma_graph(h,T0,n,W,V):
     
     plt.style.use('ggplot')
     
     plt.figure(4)
-    plt.ylabel("$\\gamma$", fontsize = 12)
+    plt.ylabel("$\\gamma \: [\\degree]$", fontsize = 12)
     plt.xlabel("Velocity [m/s]", fontsize = 12)
     plt.grid(True)
     
@@ -82,7 +87,8 @@ def gamma_graph(h,T0,n,W,V):
     V2 = cr.cruise_velocity_solver(V, h, 'V2', T0, n)
     
     V_plot = np.linspace(V1,V2,300,endpoint=True)
-    plt.plot(V_plot,gamma(h,T0,n,W,V_plot),color = 'purple')
+    gamma_plot = [i*180/np.pi for i in gamma(h,T0,n,W,V_plot)]
+    plt.plot(V_plot,gamma_plot,color = 'purple')
     plt.show()
 
     return

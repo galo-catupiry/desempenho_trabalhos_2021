@@ -8,6 +8,11 @@ Integrantes:
     Thiago Buchignani De Amicis - 10277418
 """
 # =============================================
+import os, sys
+current_dir = os.path.dirname(os.path.realpath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
+
 from aircraft import JetStar
 from Interpolacao import DragPolar
 import numpy as np
@@ -207,8 +212,9 @@ def cruise_range_new(cond,W,c,zeta):
 def TD_vs_V(h,V,D_total,T, Dmin):
     
     plt.figure(1)
+    plt.style.use('default')
     plt.xlabel("Velocity [m/s]")
-    plt.ylabel("T and D")
+    plt.ylabel("T and D [kN]")
     plt.grid(True)
     color=iter(plt.cm.brg(np.linspace(0,1,len(h))))
     
@@ -226,7 +232,7 @@ def TD_vs_V(h,V,D_total,T, Dmin):
         
         plt.plot(V,D_total,'k', label = 'Drag')
         plt.plot(V,[T]*len(V), label = 'Thrust')
-        plt.plot(V,Dmin,'--k',label = 'Minimum Drag')
+        #plt.plot(V,Dmin,'--k',label = 'Minimum Drag')
         
 
     plt.legend(loc = 'best', framealpha = 1)
@@ -235,14 +241,16 @@ def TD_vs_V(h,V,D_total,T, Dmin):
 
 def h_vs_V(h,V1,V2):
     
+    h_plot = [i*3.28084 for i in h]
+    
     plt.style.use('tableau-colorblind10')
     
     plt.figure(2)
     plt.xlabel("Velocity [m/s]")
-    plt.ylabel("h [m]")
+    plt.ylabel("h [ft]")
     plt.grid(True)
-    plt.plot(V1,h,'k')
-    plt.plot(V2,h,'k')
+    plt.plot(V1,h_plot,'k')
+    plt.plot(V2,h_plot,'k')
     #plt.legend(loc = 'best')
     return
 
@@ -259,18 +267,18 @@ def payload_vs_range(c,POV,MTOW,max_payload,max_fuel):
     x_D = cruise_range_new('V_h',MTOW - aux2, c, max_fuel/(MTOW - aux2 ))
     
     # Ponto A:
-    A = [x_A/1000,max_payload/1000]
+    A = [x_A/1000,max_payload/9.81]
     # Ponto B:
-    B = [x_B/1000,max_payload/1000]
+    B = [x_B/1000,max_payload/9.81]
     # Ponto C:
-    C = [x_C/1000, aux2/1000]
+    C = [x_C/1000, aux2/9.81]
     # Ponto D:
-    D = [x_D/1000, 0/1000]
+    D = [x_D/1000, 0/9.81]
     
     plt.style.use('dark_background')
     
     plt.figure(3)
-    plt.ylabel("Payload [kN]", fontsize = 12)
+    plt.ylabel("Payload [kg]", fontsize = 12)
     plt.xlabel("x [km]", fontsize = 12)
     plt.grid(False)
     plt.plot([A[0],B[0]],[A[1],B[1]],'-or',linewidth = 3)

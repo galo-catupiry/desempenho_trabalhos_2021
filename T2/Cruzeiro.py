@@ -1,5 +1,5 @@
 """
-Cálculo dos parâmetros de desempenho - T2
+Análise de Voo em Cruzeiro - T2
 
 Integrantes:
     Abner Micael de Paula Souza - 10788676
@@ -7,31 +7,26 @@ Integrantes:
     Guilherme Beppu de Souza    - 10696681
     Thiago Buchignani De Amicis - 10277418
 """
-
-#%% Bibliotecas
+# =============================================
 import os, sys
 current_dir = os.path.dirname(os.path.realpath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
+from aircraft import JetStar
+from Interpolacao import DragPolar
 import numpy as np
+from scipy.optimize import fsolve
 import matplotlib.pyplot as plt
 from ambiance import Atmosphere
-from Interpolacao import DragPolar
-from aircraft import JetStar
-from scipy.optimize import fsolve
-from scipy.optimize import brentq
 
-plt.close('all')
-
-#%% Dados Gerais
+# ============================================= 
 jet = JetStar(1)
 
 sealevel = Atmosphere(0)
 beta = 9296
 rho0 = sealevel.density[0]
-
-#%% Funções para Voo em Cruzeiro
+# =============================================  
 
 # Polar de arrasto
 drag_object = DragPolar()
@@ -74,13 +69,15 @@ def total_drag(V,h):
     
     return D_resp, Dmin_resp
 
-def cruise_velocity_eq(x,h):
+def cruise_velocity_eq(x,h,n,T0):
     '''
 
     Parâmetros
     ----------
     x : Variável do sistema
     h : Altura analisada (lista)
+    n: Coeficiente propulsivo
+    T0: Empuxo dos quatro motores ao nível do mar
 
     Retorna
     -------
@@ -106,7 +103,7 @@ def cruise_velocity_eq(x,h):
     
     return equations   
     
-def cruise_velocity_solver(V,h,V_type):
+def cruise_velocity_solver(V,h,V_type,T0,n):
     '''
     
     Parâmetros
@@ -114,6 +111,9 @@ def cruise_velocity_solver(V,h,V_type):
     V : Lista de velocidades definida em "MAIN".
     h : Lista de altitudes definida em "MAIN".
     V_type : Define a análise para V1 ou V2.
+    T0: Empuxo dos quatro motores ao nível do mar
+    n: Coeficiente propulsivo
+    
 
     Returns
     -------
@@ -123,7 +123,10 @@ def cruise_velocity_solver(V,h,V_type):
     
     Vresp = []
     D_total = total_drag(V,h)[0]
-    T = jet_buoyancy(h, T0)
+    T = jet_buoyancy(h, T0,n)
+    
+    CD0_resp = 0.01
+    K_resp = 0.01
     
     for j in np.arange(0,len(h)):
         
@@ -137,23 +140,24 @@ def cruise_velocity_solver(V,h,V_type):
         
         
         if (V_type == 'V1'):
-                initial = (0.01,0.01,V1_0)
+                initial = (CD0_resp,K_resp,V1_0)
         elif (V_type == 'V2'):
-                initial = (0.01,0.01,V2_0)
+                initial = (CD0_resp,K_resp,V2_0)
         
-        [CD0_resp,K_resp,V_resp] = fsolve(cruise_velocity_eq, initial, args = (h[j]))
+        [CD0_resp,K_resp,V_resp] = fsolve(cruise_velocity_eq, initial, args = (h[j],n,T0))
         
         Vresp.append(V_resp)
     
     return Vresp
     
-def jet_buoyancy(h,T0):
+def jet_buoyancy(h,T0,n):
     '''
 
     Parâmetros
     ----------
     h : Lista de altitudes definida em "MAIN".
     T0 : Empuxo dos quatro motores da aeronave ao nível do mar
+    n: Coeficiente propulsivo
 
     Returns
     -------
@@ -170,39 +174,47 @@ def jet_buoyancy(h,T0):
     
     return T
 
-def cruise_range(cond,V1,h,c, zeta):
+def cruise_range_new(cond,W,c,zeta):
     drag_cru = DragPolar()
-    rho = Atmosphere(h).density[0]
+    x_list = []
     
-    CL_cru = (2*jet.W)/(rho*V1**2*jet.S)
-    drag_cru.CLp = CL_cru
-    drag_cru.Mp = V1/Atmosphere(h).speed_of_sound[0]
-    CD1 = drag_cru.polar()
+    for V1 in np.linspace(100,250,150,endpoint= True):
+        for h in np.linspace(10000,15000,20,endpoint = True):
+            rho = Atmosphere(h).density[0]
+            
+            CL_cru = (2*W)/(rho*V1**2*jet.S)
+            drag_cru.CLp = CL_cru
+            drag_cru.Mp = V1/Atmosphere(h).speed_of_sound[0]
+            CD1 = drag_cru.polar()
+            
+            E1 = CL_cru/CD1
+            Em = 4*drag_cru.K/drag_cru.CD0
+            
+            if(cond == 'h_CL'):
+        
+                x = (2*V1*E1)/c*(1-np.sqrt(1 - zeta))
+                x_list.append(x)
+                
+            elif(cond == 'V_CL'):
+        
+                x = E1*V1/c*np.log(1/(1 - zeta))
+                x_list.append(x)
+                
+            elif(cond == 'V_h'):
+                x = (2*V1*Em)/c*np.arctan(E1*zeta/(2*Em*(1 - drag_cru.K*E1*CL_cru*zeta)))
+                x_list.append(x)
     
-    E1 = CL_cru/CD1
-    Em = 4*drag_cru.K/drag_cru.CD0
-    
-    if(cond == 'h_CL'):
-        
-        x = (2*V1*E1)/c*(1-np.sqrt(1 - zeta))
-    
-    elif(cond == 'V_CL'):
-        
-        x = E1*V1/c*np.log(1/(1 - zeta))
-        
-    elif(cond == 'V_h'):
-       
-        x = (2*V1*Em)/c*np.arctan(E1*zeta/(2*Em*(1 - drag_cru.K*E1*CL_cru*zeta)))
-        
-    return x
+    return max(x_list)
 
-#%% Plots for Cruise Flight
+# ============================================= 
+# Gráficos
 
 def TD_vs_V(h,V,D_total,T, Dmin):
     
     plt.figure(1)
+    plt.style.use('default')
     plt.xlabel("Velocity [m/s]")
-    plt.ylabel("T and D")
+    plt.ylabel("T and D [kN]")
     plt.grid(True)
     color=iter(plt.cm.brg(np.linspace(0,1,len(h))))
     
@@ -220,7 +232,7 @@ def TD_vs_V(h,V,D_total,T, Dmin):
         
         plt.plot(V,D_total,'k', label = 'Drag')
         plt.plot(V,[T]*len(V), label = 'Thrust')
-        plt.plot(V,Dmin,'--k',label = 'Minimum Drag')
+        #plt.plot(V,Dmin,'--k',label = 'Minimum Drag')
         
 
     plt.legend(loc = 'best', framealpha = 1)
@@ -228,56 +240,50 @@ def TD_vs_V(h,V,D_total,T, Dmin):
     return
 
 def h_vs_V(h,V1,V2):
-    # EM CONSTRUÇÃO!!
+    
+    h_plot = [i*3.28084 for i in h]
+    
+    plt.style.use('tableau-colorblind10')
     
     plt.figure(2)
     plt.xlabel("Velocity [m/s]")
-    plt.ylabel("h [m]")
+    plt.ylabel("h [ft]")
     plt.grid(True)
-    plt.plot(V1,h,'k')
-    plt.plot(V2,h,'k')
+    plt.plot(V1,h_plot,'k')
+    plt.plot(V2,h_plot,'k')
     #plt.legend(loc = 'best')
     return
 
-#%% MAIN
-
-# -/----------------- Propulsão ------------------/-
-n = 0.85
-T0 = 64000
-c = 0.45  # (Verificar!)
-zeta = 0.45  #  (Verificar!)
-
-# -/-------- Análise de Alcance (Cruzeiro) -------/-
-V1_cru =  811 / 3.6
-h_cru = 13105
-
-x1 = cruise_range('h_CL',V1_cru,h_cru,c, zeta)
-x2 = cruise_range('V_CL',V1_cru,h_cru,c, zeta)
-x3 = cruise_range('V_h',V1_cru,h_cru,c, zeta)
-
-# -/--------- Parâmetros para diagramas ----------/-
-
-# Diagrama T,D vs. V
-Diagrama1 = False
-if(Diagrama1):
-    h_fig1 = [10000, 8000]
-    V_fig1 = np.linspace(70,320,200)
-    [D_total_fig1,Dmin_fig1] = total_drag(V_fig1,h_fig1)
-    T_fig1 = jet_buoyancy(h_fig1,T0)
+# Gerais:
+def payload_vs_range(c,POV,MTOW,max_payload,max_fuel):
     
-    figure_1 = TD_vs_V(h_fig1,V_fig1,D_total_fig1,T_fig1, Dmin_fig1)
-
-# Diagrama h-V
-Diagrama2 = False
-if(Diagrama2):
-    h_fig2 = np.arange(0,14430,200).tolist()
-    V_fig2 = np.linspace(0,320,200)
-    [D_total_fig2,Dmin_fig2] = total_drag(V_fig2,h_fig2)
-    T_fig2 = jet_buoyancy(h_fig2,T0)
+    aux1 = max_fuel - (MTOW - (POV + max_payload))  # Combustível excedente
+    aux2 = max_payload - aux1  # Carga Paga no ponto C
     
-    V1_fig2 = cruise_velocity_solver(V_fig2,h_fig2,'V1')
-    V2_fig2 = cruise_velocity_solver(V_fig2,h_fig2,'V2')
+    # Alcance nos pontos principais:
+    x_A = 0
+    x_B = cruise_range_new('V_h',MTOW, c, (MTOW - (POV + max_payload))/MTOW)
+    x_C = cruise_range_new('V_h',MTOW, c, max_fuel/MTOW)
+    x_D = cruise_range_new('V_h',MTOW - aux2, c, max_fuel/(MTOW - aux2 ))
     
-    figure_2 =  h_vs_V(h_fig2,V1_fig2,V2_fig2)
-
-
+    # Ponto A:
+    A = [x_A/1000,max_payload/9.81]
+    # Ponto B:
+    B = [x_B/1000,max_payload/9.81]
+    # Ponto C:
+    C = [x_C/1000, aux2/9.81]
+    # Ponto D:
+    D = [x_D/1000, 0/9.81]
+    
+    plt.style.use('dark_background')
+    
+    plt.figure(3)
+    plt.ylabel("Payload [kg]", fontsize = 12)
+    plt.xlabel("x [km]", fontsize = 12)
+    plt.grid(False)
+    plt.plot([A[0],B[0]],[A[1],B[1]],'-or',linewidth = 3)
+    plt.plot([B[0],C[0]],[B[1],C[1]],'-or',linewidth = 3)
+    plt.plot([C[0],D[0]],[C[1],D[1]],'-or',linewidth = 3)
+    plt.show()
+    
+    return

@@ -137,6 +137,6 @@ def omega_vs_V(V, omega, fc, R):
     plt.legend(loc = 'best', framealpha = 1)
     
     plt.xlim(right = 400)
-    
+    plt.show()
     return
 

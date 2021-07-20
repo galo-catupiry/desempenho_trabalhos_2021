@@ -37,9 +37,6 @@ max_payload = 907.2*9.81     # Maxima carga paga, [N]
 max_fuel = 8149.233872*9.81  # Maxima qtde. de combustivel, [N]
 
 # Analise de Alcance (Cruzeiro)
-x1 = cr.cruise_range_new('h_CL',MTOW, c, max_fuel/MTOW)
-x2 = cr.cruise_range_new('V_CL',MTOW, c, max_fuel/MTOW)
-x3 = cr.cruise_range_new('V_h', MTOW, c, max_fuel/MTOW)
 
 # Tetos
 V = np.linspace(50,320,600)
@@ -76,9 +73,9 @@ if(fig2):
     figure_2 =  cr.h_vs_V(h_fig2,V1_fig2,V2_fig2)
 
 # Carga Paga vs. Alcance
-fig3 = False
+fig3 = True
 if(fig3):
-    figure_3 = cr.payload_vs_range(c,POV,MTOW,max_payload,max_fuel)
+    figure_3 = cr.payload_vs_range(c,POV,MTOW,max_payload,max_fuel,300, 13000)
     
 # Angulo de subida vs. Velocidade
 fig4 = False
@@ -107,7 +104,7 @@ if(fig6):
     figure_6 = manobras.TD_vs_V_manobras(h_fig6, fc_fig6, V_fig6, D_manobra, T_manobra)
 
 # Diagrama de desempenho em curva
-fig7 = True
+fig7 = False
 if(fig7):
     
     V_fig7 = np.linspace(50,320,200)

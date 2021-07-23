@@ -75,7 +75,7 @@ def cruise_velocity_eq(x,h,n,T0):
     Parâmetros
     ----------
     x : Variável do sistema
-    h : Altura analisada (lista)
+    h : Altura analisada
     n: Coeficiente propulsivo
     T0: Empuxo dos quatro motores ao nível do mar
 
@@ -208,6 +208,12 @@ def cruise_range(cond,W,c,zeta, V1, h1):
     
     return x
 
+def estol(W, S, h, CLmax):
+    sigma = Atmosphere(h).density[0]/Atmosphere(0).density[0]
+    V_s = (2*(W/S)/(Atmosphere(0).density[0]*sigma*CLmax))**(0.5)
+
+    return V_s
+
 # ============================================= 
 # Gráficos
 
@@ -217,7 +223,7 @@ def TD_vs_V(h,V,D_total,T, Dmin):
     plt.style.use('default')
     plt.xlabel("Velocity [m/s]")
     plt.ylabel("T and D [N]")
-    plt.grid(True)
+    plt.grid(False)
     color=iter(plt.cm.brg(np.linspace(0,1,len(h))))
     
     if (len(h) > 1):    
@@ -233,28 +239,34 @@ def TD_vs_V(h,V,D_total,T, Dmin):
         Dmin = Dmin[0]
         
         plt.plot(V,D_total,'k', label = 'Drag')
-        plt.plot(V,[T]*len(V), label = 'Thrust')
+        plt.plot(V,[T]*len(V), label = 'Thrust (h = {} [m])'.format(h[0]))
         #plt.plot(V,Dmin,'--k',label = 'Minimum Drag')
         
 
     plt.legend(loc = 'best', framealpha = 1)
     plt.ylim(top = 40000)
+    plt.savefig("empuxo_arrasto.svg")
     plt.show()
+
     return
 
-def h_vs_V(h,V1,V2):
+def h_vs_V(h,V1,V2,Vs):
     
+    V_som = Atmosphere(h).speed_of_sound[0]
+     
     h_plot = [i*3.28084 for i in h]
     
     plt.style.use('tableau-colorblind10')
     
     plt.figure()
-    plt.xlabel("Velocity [m/s]")
+    plt.xlabel("Mach")
     plt.ylabel("h [ft]")
     plt.grid(True)
-    plt.plot(V1,h_plot,'k')
-    plt.plot(V2,h_plot,'k')
-    #plt.legend(loc = 'best')
+    plt.plot(V1/V_som,h_plot,'k')
+    plt.plot(V2/V_som,h_plot,'k')
+    plt.plot(Vs, h_plot, 'r', label = 'Estol')
+    plt.legend(loc = 'best')
+    plt.savefig('h_vs_V.svg')
     return
 
 # Gerais:
@@ -306,6 +318,7 @@ def payload_vs_range(c,POV,MTOW,max_payload,max_fuel, V1, h1):
     plt.plot([x_B/1000, x_C/1000],[max_payload/9.81, (MTOW - (POV + max_fuel))/9.81],'-ok', linewidth = 3)
     plt.plot([x_C/1000, x_D/1000],[(MTOW - (POV + max_fuel))/9.81, 0],'-ok', linewidth = 3)
     plt.text(2000, 600,'M = {:.1f}\nh = {:.1f} km'.format(Mach,h1/1000))
+    plt.savefig("carga_paga.svg")
     plt.show()
     
     return

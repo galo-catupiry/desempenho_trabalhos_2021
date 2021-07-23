@@ -20,10 +20,14 @@ import Cruzeiro as cr
 import Voo_ascendente as v_asc
 import Manobras as manobras
 from aircraft import JetStar
+from ambiance import Atmosphere
 
 plt.close('all')
 # =============================================  
 jet = JetStar(1)
+
+# Estol
+CLmax = 2*1*jet.W/(64**2*Atmosphere(0).density[0]*jet.S)
 
 # Propulsao
 n = 0.85
@@ -44,6 +48,7 @@ h = np.arange(0,14400,10).tolist()
 tol = 0.015
 resp = v_asc.ceiling(h, T0, n, jet.W, V,tol)
 
+
 # =============================================  
 # Graficos
 
@@ -51,7 +56,7 @@ resp = v_asc.ceiling(h, T0, n, jet.W, V,tol)
 fig1 = False
 if(fig1):
     
-    h_fig1 = [13105]
+    h_fig1 = [10000]
     V_fig1 = np.linspace(70,320,200)
     T_fig1 = cr.jet_buoyancy(h_fig1,T0,n)
     
@@ -69,13 +74,14 @@ if(fig2):
     
     V1_fig2 = cr.cruise_velocity_solver(V_fig2,h_fig2,'V1',T0,n)
     V2_fig2 = cr.cruise_velocity_solver(V_fig2,h_fig2,'V2',T0,n)
-    
-    figure_2 =  cr.h_vs_V(h_fig2,V1_fig2,V2_fig2)
+    V_s_fig2 = cr.estol(jet.W, jet.S, h_fig2, CLmax)
+    print(V_s_fig2)
+    figure_2 =  cr.h_vs_V(h_fig2,V1_fig2,V2_fig2, V_s_fig2)
 
 # Carga Paga vs. Alcance
-fig3 = True
+fig3 = False
 if(fig3):
-    figure_3 = cr.payload_vs_range(c,POV,MTOW,max_payload,max_fuel,300, 13000)
+    figure_3 = cr.payload_vs_range(c,POV,MTOW,max_payload,max_fuel,200, 10000)
     
 # Angulo de subida vs. Velocidade
 fig4 = False
@@ -87,7 +93,7 @@ if(fig4):
 # Razao de subida vs. Velocidade
 fig5 = False
 if(fig5):
-    h = [10000]
+    h = [10000, 12000]
     figure_5 = v_asc.h_dot_vs_velocity(h, T0, n, jet.W)
 
 # Diagrama T,D vs. V para curva coordenada
@@ -95,21 +101,44 @@ fig6 = False
 if(fig6):
     
     h_fig6 = [10000]
-    fc_fig6 = np.linspace(1,1.75, 5, endpoint = True)
-    V_fig6 = np.linspace(70,320,200)
+    fc_fig6 = np.linspace(1,10, 1000, endpoint = True)
+    V_fig6 = np.linspace(20,320,200)
+    fc_max = manobras.fc_maximo(fc_fig6, V_fig6, h_fig6, T0, n)
     
+    fc_fig6 = np.linspace(1, fc_max, 5, endpoint = True)
     T_manobra = manobras.T(h_fig6, T0, n, fc_fig6)
     D_manobra = manobras.drag(V_fig6, h_fig6, fc_fig6)
     
     figure_6 = manobras.TD_vs_V_manobras(h_fig6, fc_fig6, V_fig6, D_manobra, T_manobra)
 
 # Diagrama de desempenho em curva
-fig7 = False
+fig7 = True
 if(fig7):
+
+    # Dados
+    h_fig7 = [0]
+    V_fig7 = np.linspace(20,320,200)
+    fc_fig7 = np.linspace(1,10,1000, endpoint = True)
+    fc_max = manobras.fc_maximo(fc_fig7, V_fig7, h_fig7, T0, n)
     
-    V_fig7 = np.linspace(50,320,200)
-    fc_fig7 = np.linspace(1,5, 5, endpoint = True)
-    R_fig7 = np.linspace(500,3000,4, endpoint = True)
-    omega = manobras.omega(fc_fig7, V_fig7)
-    
-    figure_7 = manobras.omega_vs_V(V_fig7, omega, fc_fig7, R_fig7) 
+    # Velocidades de Cruzeiro
+    V1_fig7 = cr.cruise_velocity_solver(V_fig7,h_fig7,'V1',T0,n)
+    V2_fig7 = cr.cruise_velocity_solver(V_fig7,h_fig7,'V2',T0,n)
+
+    # Velocidades de Manobra
+    fc_fig7 = np.linspace(1, fc_max, 100, endpoint = True)
+    [V1_manobras,V2_manobras] = manobras.velocidades_manobra_solver(V1_fig7[0], V2_fig7[0], h_fig7, T0, n , fc_fig7)
+    omega1_manobras = manobras.omega(fc_fig7, V1_manobras)
+    omega2_manobras = manobras.omega(fc_fig7, V2_manobras)
+    omega_V = (9.81/V_fig7)*np.sqrt(fc_max**2 - 1)
+
+    # Velocidade de Estol
+    fc_s = np.linspace(1,5, 100, endpoint = True)
+    [Vs, omega_s] = manobras. estol(fc_s, jet.W, jet.S, h_fig7, CLmax)
+
+    # Velocidade de Mergulho
+    Vd = 1.4*V2_fig7[0]
+
+    # Figura
+    figure_7 = manobras.omega_vs_V(V1_manobras, V2_manobras, omega1_manobras, omega2_manobras, 
+                                    fc_fig7, h_fig7, V_fig7, omega_V, fc_max, Vs, omega_s, Vd)

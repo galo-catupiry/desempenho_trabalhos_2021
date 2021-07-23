@@ -74,45 +74,51 @@ def optimal_parameters():
 
 def gamma_graph(h,T0,n,W,V):
     
-    plt.style.use('ggplot')
+    plt.style.use('default')
     
-    plt.figure(4)
+    plt.figure()
     plt.ylabel("$\\gamma \: [\\degree]$", fontsize = 12)
     plt.xlabel("Velocity [m/s]", fontsize = 12)
-    plt.grid(True)
+    plt.grid(False)
     
     V1 = cr.cruise_velocity_solver(V, h, 'V1', T0, n)
     V2 = cr.cruise_velocity_solver(V, h, 'V2', T0, n)
     
     V_plot = np.linspace(V1,V2,300,endpoint=True)
     gamma_plot = [i*180/np.pi for i in gamma(h,T0,n,W,V_plot)]
-    plt.plot(V_plot,gamma_plot,color = 'purple')
+    plt.plot(V_plot,gamma_plot,color = 'purple', label = 'h = {:.1f} km'.format(h[0]/1000))
+    plt.legend(loc = 'best', framealpha = 1)
+    plt.savefig('gamma_ascendente.svg')
     plt.show()
 
     return
 
 def h_dot_vs_velocity(h, T0, n, W):
     
-    plt.style.use('ggplot')
+    plt.style.use('default')
     
-    plt.figure(5)
+    plt.figure()
     plt.ylabel("$\dot{h} \:\: [m/s]$",fontsize = 12)
     plt.xlabel("Velocity  [m/s]",fontsize = 12)
-    plt.grid(True)
+    plt.grid(False)
     
-    V = np.linspace(0,320,200)
-    V1 = cr.cruise_velocity_solver(V, h, 'V1', T0, n)
-    V2 = cr.cruise_velocity_solver(V, h, 'V2', T0, n)
-    
-    gamma_list = gamma(h,T0,n,W,V)
-    gamma_max = max(gamma_list)   
-    
-    plt.plot(V[:170], V[:170]*gamma_max,"--k", label = '$\gamma_{máx}$')
-      
-    V_plot = np.linspace(V1,V2,300,endpoint=True)
-    plt.plot(V_plot, h_dot(h, T0, n, W, V_plot),color = 'purple')
+    for i in h:
+        V = np.linspace(0,320,200)
+        V1 = cr.cruise_velocity_solver(V, [i], 'V1', T0, n)
+        V2 = cr.cruise_velocity_solver(V, [i], 'V2', T0, n)
+        
+        gamma_list = gamma([i],T0,n,W,V)
+        gamma_max = max(gamma_list)   
+        
+        #plt.plot(V[:170], V[:170]*gamma_max,"--k", label = '$\gamma_{máx}$')
+          
+        V_plot = np.linspace(V1,V2,300,endpoint=True)
+        plt.plot(V_plot, h_dot([i], T0, n, W, V_plot), label = 'h = {:.1f} [km]'.format(i/1000))
     legend = plt.legend(loc = 'best', framealpha = 1)
     plt.setp(legend.get_texts(), color='k')
+    plt.ylim(bottom = 0)
+    plt.savefig('razaoSubida_velocidade.svg')
     plt.show()
+
     
     return

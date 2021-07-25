@@ -15,18 +15,13 @@ sys.path.append(parent_dir)
 
 import numpy as np
 import matplotlib.pyplot as plt
-<<<<<<< HEAD
 import pandas as pd
-=======
->>>>>>> Abner
 
 import Cruzeiro as cr
 import Voo_ascendente as v_asc
 import Manobras as manobras
-<<<<<<< HEAD
 import Decolagem as decolagem
-=======
->>>>>>> Abner
+
 from aircraft import JetStar
 from ambiance import Atmosphere
 
@@ -50,15 +45,8 @@ max_payload = 907.2*g     # Maxima carga paga, [N]
 max_fuel = 8149.233872*g  # Maxima qtde. de combustivel, [N]
 
 # Analise de Alcance (Cruzeiro)
-<<<<<<< HEAD
 
-=======
-V1 = np.linspace(0,320,200)
-h1 = [13000]
-M1_cr = cr.cruise_velocity_solver(V1,h1,'V1',T0,n)/Atmosphere(h1).speed_of_sound
-M2_cr = cr.cruise_velocity_solver(V1,h1,'V2',T0,n)/Atmosphere(h1).speed_of_sound
-print(M1_cr, M2_cr)
->>>>>>> Abner
+
 # Tetos
 V = np.linspace(50,320,600)
 h = np.arange(0,14400,10).tolist()
@@ -93,13 +81,7 @@ if(fig2):
     V_s_fig2 = cr.estol(jet.W, jet.S, h_fig2, CLmax)
     V1_fig2 = cr.cruise_velocity_solver(V_fig2,h_fig2,'V1',T0,n)
     V2_fig2 = cr.cruise_velocity_solver(V_fig2,h_fig2,'V2',T0,n)
-<<<<<<< HEAD
-    V_s_fig2 = cr.estol(jet.W, jet.S, h_fig2, CLmax)
-    print(V_s_fig2)
-=======
-    
-    
->>>>>>> Abner
+
     figure_2 =  cr.h_vs_V(h_fig2,V1_fig2,V2_fig2, V_s_fig2)
 
 # Carga Paga vs. Alcance
@@ -166,7 +148,6 @@ if(fig7):
     # Figura
     figure_7 = manobras.omega_vs_V(V1_manobras, V2_manobras, omega1_manobras, omega2_manobras, 
                                     fc_fig7, h_fig7, V_fig7, omega_V, fc_max, Vs, omega_s, Vd)
-<<<<<<< HEAD
 
 tab = True
 if(tab):
@@ -205,6 +186,3 @@ if(tab):
 
 
 print(Height_df[0].to_latex())
-    
-=======
->>>>>>> Abner

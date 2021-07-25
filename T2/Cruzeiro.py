@@ -209,12 +209,6 @@ def cruise_range(cond,W,c,zeta, V1, h1):
     return x
 
 def estol(W, S, h, CLmax):
-<<<<<<< HEAD
-    sigma = Atmosphere(h).density[0]/Atmosphere(0).density[0]
-    V_s = (2*(W/S)/(Atmosphere(0).density[0]*sigma*CLmax))**(0.5)
-
-    return V_s
-=======
 
     V_s_resp = []
 
@@ -230,7 +224,6 @@ def estol(W, S, h, CLmax):
         V_s = (2*(W/S)/(Atmosphere(0).density[0]*sigma*CLmax))**(0.5)
         
         return V_s
->>>>>>> Abner
 
 # ============================================= 
 # Gráficos
@@ -270,12 +263,8 @@ def TD_vs_V(h,V,D_total,T, Dmin):
 
 def h_vs_V(h,V1,V2,Vs):
     
-<<<<<<< HEAD
-    V_som = Atmosphere(h).speed_of_sound[0]
-     
-=======
     V_som = Atmosphere(h).speed_of_sound
->>>>>>> Abner
+  
     h_plot = [i*3.28084 for i in h]
     
     plt.style.use('tableau-colorblind10')
@@ -286,16 +275,10 @@ def h_vs_V(h,V1,V2,Vs):
     plt.grid(True)
     plt.plot(V1/V_som,h_plot,'k')
     plt.plot(V2/V_som,h_plot,'k')
-<<<<<<< HEAD
-    plt.plot(Vs, h_plot, 'r', label = 'Estol')
-    plt.legend(loc = 'best')
-    plt.savefig('h_vs_V.svg')
-=======
     plt.plot(Vs/V_som, h_plot, 'r', label = 'Estol')
     plt.legend(loc = 'best', framealpha = 1)
     plt.savefig('h_vs_V.svg')
     plt.show()
->>>>>>> Abner
     return
 
 # Gerais:

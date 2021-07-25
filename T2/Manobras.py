@@ -58,10 +58,6 @@ def drag(V, h, fc):
     for i in fc:
         drag_manobra.CLp = CL(i, V, h)
         CD = drag_manobra.polar()
-<<<<<<< HEAD
-=======
-        
->>>>>>> Abner
         D = (1/2)*rho*(V**2)*jet.S*CD
         D_list.append(D)
         

@@ -32,6 +32,8 @@ CD_mach = pd.read_excel(xlsx, 'CD_mach')
 CL_expe = CL_mach.iloc[:,1]
 CD_expe = CD_mach.iloc[:,1]
 M_expe  = CL_mach.iloc[:,0]
+
+#print(CD_expe)
      
 # Funções:
 

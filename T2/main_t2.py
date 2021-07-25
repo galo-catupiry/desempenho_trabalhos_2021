@@ -15,10 +15,12 @@ sys.path.append(parent_dir)
 
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 
 import Cruzeiro as cr
 import Voo_ascendente as v_asc
 import Manobras as manobras
+import Decolagem as decolagem
 from aircraft import JetStar
 from ambiance import Atmosphere
 
@@ -35,22 +37,20 @@ T0 = 64000
 c = 0.5/3600
 
 # Pesos
-POV = 11566*9.81             # Peso vazio operacional, [N] 
-MTOW = 20071.446*9.81        # Peso maximo de decolagem, [N]  
-max_payload = 907.2*9.81     # Maxima carga paga, [N]
-max_fuel = 8149.233872*9.81  # Maxima qtde. de combustivel, [N]
+g=9.81
+POV = 11566*g             # Peso vazio operacional, [N] 
+MTOW = 20071.446*g        # Peso maximo de decolagem, [N]  
+max_payload = 907.2*g     # Maxima carga paga, [N]
+max_fuel = 8149.233872*g  # Maxima qtde. de combustivel, [N]
 
 # Analise de Alcance (Cruzeiro)
-V1 = np.linspace(0,320,200)
-h1 = [13000]
-M1_cr = cr.cruise_velocity_solver(V1,h1,'V1',T0,n)/Atmosphere(h1).speed_of_sound
-M2_cr = cr.cruise_velocity_solver(V1,h1,'V2',T0,n)/Atmosphere(h1).speed_of_sound
-print(M1_cr, M2_cr)
+
 # Tetos
 V = np.linspace(50,320,600)
 h = np.arange(0,14400,10).tolist()
 tol = 0.015
-resp = v_asc.ceiling(h, T0, n, jet.W, V,tol)
+#resp = v_asc.ceiling(h, T0, n, jet.W, V,tol)
+
 
 
 # =============================================  
@@ -79,8 +79,6 @@ if(fig2):
     V_s_fig2 = cr.estol(jet.W, jet.S, h_fig2, CLmax)
     V1_fig2 = cr.cruise_velocity_solver(V_fig2,h_fig2,'V1',T0,n)
     V2_fig2 = cr.cruise_velocity_solver(V_fig2,h_fig2,'V2',T0,n)
-    
-    
     figure_2 =  cr.h_vs_V(h_fig2,V1_fig2,V2_fig2, V_s_fig2)
 
 # Carga Paga vs. Alcance
@@ -147,3 +145,41 @@ if(fig7):
     # Figura
     figure_7 = manobras.omega_vs_V(V1_manobras, V2_manobras, omega1_manobras, omega2_manobras, 
                                     fc_fig7, h_fig7, V_fig7, omega_V, fc_max, Vs, omega_s, Vd)
+
+tab = True
+if(tab):
+    '''Para cada altitude, gera a tabela de distancia de decolagem 
+    para variação de temperatura e peso'''
+    h_list = np.arange(0, 3000, 1000).tolist()
+    Temp_list = np.arange(-20, 45, 5).tolist()
+    W_list_kg = np.linspace((12000), (20000), 9, endpoint=True)
+    
+    initial_data={'Temp':Temp_list, 'Takeoff Weight':W_list_kg}
+    Height_df=[]
+    for h in h_list:
+        df = pd.DataFrame(initial_data,columns = [int(W_kg) for W_kg in W_list_kg], index=Temp_list)
+        for W_kg in W_list_kg:     
+            W = W_kg*9.81
+            X_pista = []
+            for Temp in Temp_list:    
+
+                rho = decolagem.air_density(Temp+273.15, h)
+                V_S = np.sqrt((2*W)/(decolagem.CLmax*jet.S*rho))
+                
+                # Corrida de solo
+                x_G, V_Lo = decolagem.running(rho,V_S, W, decolagem.CLmax, )
+                
+                #Rotação
+                x_R = decolagem.rotation(V_S)
+                
+                #Transição e subida
+                x_Tr, x_Cl = decolagem.transition_and_climbing(V_Lo, W, rho)
+                
+                #Distancia de pista
+                x_pista = (x_G+ x_R+ x_Tr+ x_Cl)
+                X_pista.append(round(x_pista))
+            df[(W_kg)] = X_pista
+        Height_df.append(df)
+
+
+print(Height_df[0].to_latex())

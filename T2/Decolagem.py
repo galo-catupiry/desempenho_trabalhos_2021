@@ -14,12 +14,11 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 from aircraft import JetStar
 from ambiance import Atmosphere
 from Interpolacao import DragPolar
-from Cruzeiro import jet_buoyancy
+
 
 # =============================================
 jet = JetStar('power approach')
@@ -27,19 +26,15 @@ sealevel = Atmosphere(0)
 rho0 = sealevel.density[0]
 g = 9.81
 ft_to_m = 0.3048
-# =============================================
-
-CLmax = 2*1*jet.W/(64**2*Atmosphere(0).density[0]*jet.S)
-# Estol
-
+#CLmax = 2*1*jet.W/(64**2*Atmosphere(0).density[0]*jet.S)
 R_gas = 287.058 #J/(kg*K) - constante dos gases
+# =============================================
 
 # Propulsao
 n = 0.85
 T0 = 64000
 c = 0.5/3600
 
-MTOW = 18500*g #temporário
 
 def air_density(Temp, h):
     '''densidade fora da ISA; Temp em Kelvin'''
@@ -48,16 +43,9 @@ def air_density(Temp, h):
     rho = P/(R_gas*Temp_isa_mod) 
     return (rho/rho0)[0]
 
-#rho = air_density(273.15-20, 1000)
-#print(rho)
-
-drag = DragPolar()
-
 
 def ground_acceleration(rho, V, W, CLmax, gamma_pista=0, mi=0.04):
-    
     L = 0.5*CLmax*jet.S*rho*V**2   
-    
     D = 0.5*jet.CD*jet.S*rho*V**2
     T = T0*((rho/rho0)**n)
     Fric = mi*(W*np.cos(gamma_pista) - L)
@@ -81,8 +69,7 @@ def rotation(V_S):
     x_R =t_R*V_R  
     return x_R
    
-def transition_and_climbing(V_Lo, W, rho):
-    #Transição e Subida
+def transition_and_climbing(rho, V_Lo, W,  CLmax):
     R_Tr = (V_Lo**2)/(0.15*g)
     h_Sc = 35*ft_to_m
     gamma = ground_acceleration(rho, 0.7*V_Lo, W ,CLmax, 0, 0.04)[1]

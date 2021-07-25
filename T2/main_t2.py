@@ -54,9 +54,16 @@ tol = 0.015
 
 # =============================================  
 # Graficos
+fig1 = False
+fig2 = False
+fig3 = False
+fig4 = False
+fig5 = False
+fig6 = False
+fig7 = False
+tab = True
 
 # Diagrama T,D vs. V
-fig1 = False
 if(fig1):
     
     h_fig1 = [10000]
@@ -68,7 +75,6 @@ if(fig1):
     figure_1 = cr.TD_vs_V(h_fig1,V_fig1,D_total_fig1,T_fig1, Dmin_fig1)
 
 # Diagrama h-V
-fig2 = False
 if(fig2):
     h_fig2 = np.arange(0,14400,10).tolist()
     V_fig2 = np.linspace(0,320,200)
@@ -78,29 +84,25 @@ if(fig2):
     V1_fig2 = cr.cruise_velocity_solver(V_fig2,h_fig2,'V1',T0,n)
     V2_fig2 = cr.cruise_velocity_solver(V_fig2,h_fig2,'V2',T0,n)
     V_s_fig2 = cr.estol(jet.W, jet.S, h_fig2, CLmax)
-    print(V_s_fig2)
+    #print(V_s_fig2)
     figure_2 =  cr.h_vs_V(h_fig2,V1_fig2,V2_fig2, V_s_fig2)
 
 # Carga Paga vs. Alcance
-fig3 = False
 if(fig3):
     figure_3 = cr.payload_vs_range(c,POV,MTOW,max_payload,max_fuel,200, 10000)
     
 # Angulo de subida vs. Velocidade
-fig4 = False
 if(fig4):
     V_fig3 = np.linspace(0,320,200)
     h = [10000]
     figure_4 = v_asc.gamma_graph(h, T0, n, jet.W,V_fig3)
 
 # Razao de subida vs. Velocidade
-fig5 = False
 if(fig5):
     h = [10000, 12000]
     figure_5 = v_asc.h_dot_vs_velocity(h, T0, n, jet.W)
 
 # Diagrama T,D vs. V para curva coordenada
-fig6 = False
 if(fig6):
     
     h_fig6 = [10000]
@@ -115,7 +117,6 @@ if(fig6):
     figure_6 = manobras.TD_vs_V_manobras(h_fig6, fc_fig6, V_fig6, D_manobra, T_manobra)
 
 # Diagrama de desempenho em curva
-fig7 = False
 if(fig7):
 
     # Dados
@@ -146,7 +147,7 @@ if(fig7):
     figure_7 = manobras.omega_vs_V(V1_manobras, V2_manobras, omega1_manobras, omega2_manobras, 
                                     fc_fig7, h_fig7, V_fig7, omega_V, fc_max, Vs, omega_s, Vd)
 
-tab = True
+
 if(tab):
     '''Para cada altitude, gera a tabela de distancia de decolagem 
     para variação de temperatura e peso'''
@@ -164,16 +165,16 @@ if(tab):
             for Temp in Temp_list:    
 
                 rho = decolagem.air_density(Temp+273.15, h)
-                V_S = np.sqrt((2*W)/(decolagem.CLmax*jet.S*rho))
+                V_S = np.sqrt((2*W)/(CLmax*jet.S*rho))
                 
                 # Corrida de solo
-                x_G, V_Lo = decolagem.running(rho,V_S, W, decolagem.CLmax, )
+                x_G, V_Lo = decolagem.running(rho, V_S, W, CLmax, )
                 
                 #Rotação
                 x_R = decolagem.rotation(V_S)
                 
                 #Transição e subida
-                x_Tr, x_Cl = decolagem.transition_and_climbing(V_Lo, W, rho)
+                x_Tr, x_Cl = decolagem.transition_and_climbing(rho, V_Lo, W,  CLmax)
                 
                 #Distancia de pista
                 x_pista = (x_G+ x_R+ x_Tr+ x_Cl)
@@ -181,6 +182,6 @@ if(tab):
             df[(W_kg)] = X_pista
         Height_df.append(df)
 
-
-print(Height_df[0].to_latex())
-    
+    print(Height_df[0].to_latex(),'\n\n')
+    print(Height_df[1].to_latex(),'\n\n')
+    print(Height_df[2].to_latex())

@@ -21,6 +21,7 @@ import Cruzeiro as cr
 import Voo_ascendente as v_asc
 import Manobras as manobras
 import Decolagem as decolagem
+
 from aircraft import JetStar
 from ambiance import Atmosphere
 
@@ -45,11 +46,13 @@ max_fuel = 8149.233872*g  # Maxima qtde. de combustivel, [N]
 
 # Analise de Alcance (Cruzeiro)
 
+
 # Tetos
 V = np.linspace(50,320,600)
 h = np.arange(0,14400,10).tolist()
 tol = 0.015
 #resp = v_asc.ceiling(h, T0, n, jet.W, V,tol)
+
 
 
 # =============================================  
@@ -76,15 +79,18 @@ if(fig1):
 
 # Diagrama h-V
 if(fig2):
-    h_fig2 = np.arange(0,14400,10).tolist()
+    h_fig2 = np.arange(0,14400,5).tolist()
     V_fig2 = np.linspace(0,320,200)
     [D_total_fig2,Dmin_fig2] = cr.total_drag(V_fig2,h_fig2)
     T_fig2 = cr.jet_buoyancy(h_fig2,T0,n)
-    
+
+    V_s_fig2 = cr.estol(jet.W, jet.S, h_fig2, CLmax)
     V1_fig2 = cr.cruise_velocity_solver(V_fig2,h_fig2,'V1',T0,n)
     V2_fig2 = cr.cruise_velocity_solver(V_fig2,h_fig2,'V2',T0,n)
+
     V_s_fig2 = cr.estol(jet.W, jet.S, h_fig2, CLmax)
     #print(V_s_fig2)
+
     figure_2 =  cr.h_vs_V(h_fig2,V1_fig2,V2_fig2, V_s_fig2)
 
 # Carga Paga vs. Alcance
@@ -182,6 +188,10 @@ if(tab):
             df[(W_kg)] = X_pista
         Height_df.append(df)
 
+
     print(Height_df[0].to_latex(),'\n\n')
     print(Height_df[1].to_latex(),'\n\n')
     print(Height_df[2].to_latex())
+
+print(Height_df[0].to_latex())
+

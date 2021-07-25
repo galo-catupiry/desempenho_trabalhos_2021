@@ -75,7 +75,7 @@ def cruise_velocity_eq(x,h,n,T0):
     Parâmetros
     ----------
     x : Variável do sistema
-    h : Altura analisada (lista)
+    h : Altura analisada
     n: Coeficiente propulsivo
     T0: Empuxo dos quatro motores ao nível do mar
 
@@ -125,6 +125,7 @@ def cruise_velocity_solver(V,h,V_type,T0,n):
     D_total = total_drag(V,h)[0]
     T = jet_buoyancy(h, T0,n)
     
+    # Chutes iniciais
     CD0_resp = 0.01
     K_resp = 0.01
     
@@ -174,48 +175,55 @@ def jet_buoyancy(h,T0,n):
     
     return T
 
-def cruise_range_new(cond,W,c,zeta):
+def cruise_range(cond,W,c,zeta, V1, h1):
+    ''' 
+    Fornecidos os valores necessários, calcula-se o
+    alcance para diferentes configurações:
+
+    V1: Velocidade inicial de cruzeiro;
+    h1: Altitude inicial de cruzeiro.    '''
+
     drag_cru = DragPolar()
-    x_list = []
     
-    for V1 in np.linspace(100,250,150,endpoint= True):
-        for h in np.linspace(10000,15000,20,endpoint = True):
-            rho = Atmosphere(h).density[0]
-            
-            CL_cru = (2*W)/(rho*V1**2*jet.S)
-            drag_cru.CLp = CL_cru
-            drag_cru.Mp = V1/Atmosphere(h).speed_of_sound[0]
-            CD1 = drag_cru.polar()
-            
-            E1 = CL_cru/CD1
-            Em = 4*drag_cru.K/drag_cru.CD0
-            
-            if(cond == 'h_CL'):
-        
-                x = (2*V1*E1)/c*(1-np.sqrt(1 - zeta))
-                x_list.append(x)
-                
-            elif(cond == 'V_CL'):
-        
-                x = E1*V1/c*np.log(1/(1 - zeta))
-                x_list.append(x)
-                
-            elif(cond == 'V_h'):
-                x = (2*V1*Em)/c*np.arctan(E1*zeta/(2*Em*(1 - drag_cru.K*E1*CL_cru*zeta)))
-                x_list.append(x)
+    rho = Atmosphere(h1).density[0]
     
-    return max(x_list)
+    CL1_cru = (2*W)/(rho*V1**2*jet.S)
+    drag_cru.CLp = CL1_cru
+    drag_cru.Mp = V1/Atmosphere(h1).speed_of_sound[0]
+    CD1 = drag_cru.polar()
+    
+    E1 = CL1_cru/CD1
+    Em = np.sqrt(drag_cru.CD0/drag_cru.K)/(2*drag_cru.CD0)
+    
+    if(cond == 'h_CL'):
+
+        x = (2*V1*E1)/c*(1-np.sqrt(1 - zeta))
+        
+    elif(cond == 'V_CL'):
+
+        x = E1*V1/c*np.log(1/(1 - zeta))
+        
+    elif(cond == 'V_h'):
+        x = (2*V1*Em)/c*np.arctan(E1*zeta/(2*Em*(1 - drag_cru.K*E1*CL1_cru*zeta)))
+    
+    return x
+
+def estol(W, S, h, CLmax):
+    sigma = Atmosphere(h).density[0]/Atmosphere(0).density[0]
+    V_s = (2*(W/S)/(Atmosphere(0).density[0]*sigma*CLmax))**(0.5)
+
+    return V_s
 
 # ============================================= 
 # Gráficos
 
 def TD_vs_V(h,V,D_total,T, Dmin):
     
-    plt.figure(1)
+    plt.figure()
     plt.style.use('default')
     plt.xlabel("Velocity [m/s]")
-    plt.ylabel("T and D [kN]")
-    plt.grid(True)
+    plt.ylabel("T and D [N]")
+    plt.grid(False)
     color=iter(plt.cm.brg(np.linspace(0,1,len(h))))
     
     if (len(h) > 1):    
@@ -231,59 +239,86 @@ def TD_vs_V(h,V,D_total,T, Dmin):
         Dmin = Dmin[0]
         
         plt.plot(V,D_total,'k', label = 'Drag')
-        plt.plot(V,[T]*len(V), label = 'Thrust')
+        plt.plot(V,[T]*len(V), label = 'Thrust (h = {} [m])'.format(h[0]))
         #plt.plot(V,Dmin,'--k',label = 'Minimum Drag')
         
 
     plt.legend(loc = 'best', framealpha = 1)
     plt.ylim(top = 40000)
+    plt.savefig("empuxo_arrasto.svg")
+    plt.show()
+
     return
 
-def h_vs_V(h,V1,V2):
+def h_vs_V(h,V1,V2,Vs):
     
+    V_som = Atmosphere(h).speed_of_sound[0]
+     
     h_plot = [i*3.28084 for i in h]
     
     plt.style.use('tableau-colorblind10')
     
-    plt.figure(2)
-    plt.xlabel("Velocity [m/s]")
+    plt.figure()
+    plt.xlabel("Mach")
     plt.ylabel("h [ft]")
     plt.grid(True)
-    plt.plot(V1,h_plot,'k')
-    plt.plot(V2,h_plot,'k')
-    #plt.legend(loc = 'best')
+    plt.plot(V1/V_som,h_plot,'k')
+    plt.plot(V2/V_som,h_plot,'k')
+    plt.plot(Vs, h_plot, 'r', label = 'Estol')
+    plt.legend(loc = 'best')
+    plt.savefig('h_vs_V.svg')
     return
 
 # Gerais:
-def payload_vs_range(c,POV,MTOW,max_payload,max_fuel):
+def payload_vs_range(c,POV,MTOW,max_payload,max_fuel, V1, h1):
     
-    aux1 = max_fuel - (MTOW - (POV + max_payload))  # Combustível excedente
-    aux2 = max_payload - aux1  # Carga Paga no ponto C
-    
-    # Alcance nos pontos principais:
-    x_A = 0
-    x_B = cruise_range_new('V_h',MTOW, c, (MTOW - (POV + max_payload))/MTOW)
-    x_C = cruise_range_new('V_h',MTOW, c, max_fuel/MTOW)
-    x_D = cruise_range_new('V_h',MTOW - aux2, c, max_fuel/(MTOW - aux2 ))
+    Mach = V1/Atmosphere(h1).speed_of_sound[0] 
     
     # Ponto A:
-    A = [x_A/1000,max_payload/9.81]
+    '''
+    A aeronave não possui combustível nesse ponto, não havendo variação de peso.
+    '''
+    W1_A = POV + max_payload
+    W2_A = W1_A
+    zeta_A = (W1_A - W2_A)/W1_A
+    x_A = cruise_range('V_h', W1_A, c, zeta_A, V1, h1)
+    
     # Ponto B:
-    B = [x_B/1000,max_payload/9.81]
+    '''
+    Nesse ponto, adiciona-se combustível até atingir-se o MTOW da aeronave.
+    '''
+    W1_B = MTOW
+    W2_B = W1_B - (MTOW - (max_payload + POV))
+    zeta_B = (W1_B - W2_B)/W1_B
+    x_B = cruise_range('V_h',W1_B, c, zeta_B, V1, h1)
+    
     # Ponto C:
-    C = [x_C/1000, aux2/9.81]
+    '''
+    Nesse ponto, partiu-se com o máximo combustível permitido.
+    '''
+    W1_C = MTOW
+    W2_C = W1_C - max_fuel
+    zeta_C = (W1_C - W2_C)/W1_C
+    x_C = cruise_range('V_h', W1_C, c, zeta_C, V1, h1)
+
     # Ponto D:
-    D = [x_D/1000, 0/9.81]
+    '''
+    Nesse ponto, partiu-se sem carga paga, com o máximo de combustível.
+    '''
+    W1_D = POV + max_fuel
+    W2_D = POV 
+    zeta_D = (W1_D - W2_D)/W1_D
+    x_D = cruise_range('V_h',W1_D, c, zeta_D, V1, h1)    
     
-    plt.style.use('dark_background')
-    
-    plt.figure(3)
+    plt.figure()
     plt.ylabel("Payload [kg]", fontsize = 12)
     plt.xlabel("x [km]", fontsize = 12)
     plt.grid(False)
-    plt.plot([A[0],B[0]],[A[1],B[1]],'-or',linewidth = 3)
-    plt.plot([B[0],C[0]],[B[1],C[1]],'-or',linewidth = 3)
-    plt.plot([C[0],D[0]],[C[1],D[1]],'-or',linewidth = 3)
+    plt.plot([x_A/1000,x_B/1000],[max_payload/9.81,max_payload/9.81],'-ok', linewidth = 3)
+    plt.plot([x_B/1000, x_C/1000],[max_payload/9.81, (MTOW - (POV + max_fuel))/9.81],'-ok', linewidth = 3)
+    plt.plot([x_C/1000, x_D/1000],[(MTOW - (POV + max_fuel))/9.81, 0],'-ok', linewidth = 3)
+    plt.text(2000, 600,'M = {:.1f}\nh = {:.1f} km'.format(Mach,h1/1000))
+    plt.savefig("carga_paga.svg")
     plt.show()
     
     return

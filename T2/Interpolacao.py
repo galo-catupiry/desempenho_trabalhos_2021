@@ -32,6 +32,8 @@ CD_mach = pd.read_excel(xlsx, 'CD_mach')
 CL_expe = CL_mach.iloc[:,1]
 CD_expe = CD_mach.iloc[:,1]
 M_expe  = CL_mach.iloc[:,0]
+
+#print(CD_expe)
      
 # Funções:
 
@@ -84,26 +86,26 @@ Mp = np.linspace(0.05,1,20)
 # ----------------------------- GRÁFICOS ------------------------------------#
 
 # Superfície 3D: Mach variável
+'''
+fig = plt.figure()
+ax = plt.axes(projection="3d")
+CLp_mesh, Mp_mesh = np.meshgrid(CLp, Mp)
 
-# fig = plt.figure()
-# ax = plt.axes(projection="3d")
-# CLp_mesh, Mp_mesh = np.meshgrid(CLp, Mp)
+drag_plot = DragPolar()
+drag_plot.CLp = CLp_mesh
+drag_plot.Mp = Mp_mesh
+resp_graf = drag_plot.polar()
 
-# drag_plot = DragPolar()
-# drag_plot.CLp = CLp_mesh
-# drag_plot.Mp = Mp_mesh
-# resp_graf = drag_plot.polar()
-
-# ax.plot_surface(Mp_mesh,CLp_mesh, resp_graf, rstride=1, cstride=1,
-#                 cmap='viridis', edgecolor='none', alpha = 0.9)
-# ax.scatter3D(M_expe,CL_expe, CD_expe,c = 'red',alpha=1)
-# #ax.set_title("Polar de arrasto")
-# ax.set_xlabel("CL")
-# ax.set_ylabel("M")
-# ax.set_zlabel("CD")
-# #plt.savefig("polar_arrasto.svg")
-# plt.show()
-
+ax.plot_surface(Mp_mesh,CLp_mesh, resp_graf, rstride=1, cstride=1,
+                cmap='viridis', edgecolor='none', alpha = 0.9)
+ax.scatter3D(M_expe,CL_expe, CD_expe,c = 'red',alpha=1)
+#ax.set_title("Polar de arrasto")
+ax.set_xlabel("CL")
+ax.set_ylabel("M")
+ax.set_zlabel("CD")
+plt.savefig("polar_arrasto.svg")
+plt.show()
+'''
 
 # # Curva CL x CD: Mach fixo
 # drag_plot.Mp = 0.8

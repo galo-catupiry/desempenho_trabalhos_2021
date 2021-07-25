@@ -52,6 +52,7 @@ tol = 0.015
 #resp = v_asc.ceiling(h, T0, n, jet.W, V,tol)
 
 
+
 # =============================================  
 # Graficos
 
@@ -70,15 +71,14 @@ if(fig1):
 # Diagrama h-V
 fig2 = False
 if(fig2):
-    h_fig2 = np.arange(0,14400,10).tolist()
+    h_fig2 = np.arange(0,14400,5).tolist()
     V_fig2 = np.linspace(0,320,200)
     [D_total_fig2,Dmin_fig2] = cr.total_drag(V_fig2,h_fig2)
     T_fig2 = cr.jet_buoyancy(h_fig2,T0,n)
-    
+
+    V_s_fig2 = cr.estol(jet.W, jet.S, h_fig2, CLmax)
     V1_fig2 = cr.cruise_velocity_solver(V_fig2,h_fig2,'V1',T0,n)
     V2_fig2 = cr.cruise_velocity_solver(V_fig2,h_fig2,'V2',T0,n)
-    V_s_fig2 = cr.estol(jet.W, jet.S, h_fig2, CLmax)
-    print(V_s_fig2)
     figure_2 =  cr.h_vs_V(h_fig2,V1_fig2,V2_fig2, V_s_fig2)
 
 # Carga Paga vs. Alcance
@@ -183,4 +183,3 @@ if(tab):
 
 
 print(Height_df[0].to_latex())
-    

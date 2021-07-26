@@ -26,16 +26,20 @@ import Pouso as pouso
 from aircraft import JetStar
 from ambiance import Atmosphere
 
-# Graficos
+''' Graficos e Tabelas:
+ Modifique os valores das variáveis para obter os outputs do trabalho
+'''
 fig1 = False
-fig2 = False
+fig2 = False  #alto consumo de memória 
 fig3 = False
 fig4 = False
 fig5 = False
 fig6 = False
 fig7 = False
-tab1 = True
+tab1 = False
 tab2 = True
+'''---'''
+
 
 plt.close('all')
 # =============================================  
@@ -65,9 +69,6 @@ tol = 0.015
 #resp = v_asc.ceiling(h, T0, n, jet.W, V,tol)
 
 
-
-# =============================================  
-# Graficos
 
 # Diagrama T,D vs. V
 
@@ -102,14 +103,14 @@ if(fig3):
 # Angulo de subida vs. Velocidade
 
 if(fig4):
-    V_fig3 = np.linspace(0,320,200)
-    h = [10000]
+    V_fig3 = np.linspace(0,420,500)
+    h = [0, 7500,10000]
     figure_4 = v_asc.gamma_graph(h, T0, n, jet.W,V_fig3)
 
 # Razao de subida vs. Velocidade
 
 if(fig5):
-    h = [10000, 12000]
+    h = [0, 7500,10000]
     figure_5 = v_asc.h_dot_vs_velocity(h, T0, n, jet.W)
 
 # Diagrama T,D vs. V para curva coordenada
@@ -232,7 +233,6 @@ if(tab2):
                 X_pista_la.append(round(x_pista_la))
             df_la[(W_kg)] = X_pista_la
         Height_df_landing.append(df_la)
-
 
     print(Height_df_landing[0].to_latex(),'\n\n')
     print(Height_df_landing[1].to_latex(),'\n\n')

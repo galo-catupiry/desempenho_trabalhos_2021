@@ -237,7 +237,7 @@ def TD_vs_V(h,V,D_total,T, Dmin):
         for i in np.arange(0,len(T)):
             c=next(color)
             plt.plot(V,D_total[i], color = c)
-            plt.plot(V,[T[i]]*len(V), label = 'T,D (h = {} [m])'.format(h[i]),color = c)
+            plt.plot(V,[T[i]]*len(V), label = 'T,D (h = {:.1f} km)'.format(h[i]/1000),color = c)
             #plt.plot(V,Dmin[i],'--k')
     else:
         
@@ -245,7 +245,7 @@ def TD_vs_V(h,V,D_total,T, Dmin):
         Dmin = Dmin[0]
         
         plt.plot(V,D_total,'k', label = 'Drag')
-        plt.plot(V,[T]*len(V), label = 'Thrust (h = {} [m])'.format(h[0]))
+        plt.plot(V,[T]*len(V), label = 'Thrust (h = {:.1f} km)'.format(h[0]/1000))
         #plt.plot(V,Dmin,'--k',label = 'Minimum Drag')
         
 
@@ -271,7 +271,7 @@ def h_vs_V(h,V1,V2,Vs):
     plt.grid(True)
     plt.plot(V1/V_som,h_plot,'k')
     plt.plot(V2/V_som,h_plot,'k')
-    plt.plot(Vs/V_som, h_plot, 'r', label = 'Estol')
+    plt.plot(Vs/V_som, h_plot, 'r', label = 'Stall')
     plt.legend(loc = 'best', framealpha = 1)
     plt.savefig('h_vs_V.svg')
     plt.show()

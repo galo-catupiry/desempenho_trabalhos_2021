@@ -62,9 +62,9 @@ fig2 = False
 fig3 = False
 fig4 = False
 fig5 = False
-fig6 = False
+fig6 = True
 fig7 = False
-tab = True
+tab = False
 
 # Diagrama T,D vs. V
 if(fig1):
@@ -99,13 +99,13 @@ if(fig3):
     
 # Angulo de subida vs. Velocidade
 if(fig4):
-    V_fig3 = np.linspace(0,320,200)
-    h = [10000]
+    V_fig3 = np.linspace(0,420,500)
+    h = [0, 7500,10000]
     figure_4 = v_asc.gamma_graph(h, T0, n, jet.W,V_fig3)
 
 # Razao de subida vs. Velocidade
 if(fig5):
-    h = [10000, 12000]
+    h = [0, 7500,10000]
     figure_5 = v_asc.h_dot_vs_velocity(h, T0, n, jet.W)
 
 # Diagrama T,D vs. V para curva coordenada
@@ -193,5 +193,5 @@ if(tab):
     print(Height_df[1].to_latex(),'\n\n')
     print(Height_df[2].to_latex())
 
-print(Height_df[0].to_latex())
+    print(Height_df[0].to_latex())
 

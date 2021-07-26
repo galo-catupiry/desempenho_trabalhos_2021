@@ -184,18 +184,18 @@ def TD_vs_V_manobras(h, fc, V, D_manobra, T_manobra):
     plt.figure()
     plt.style.use('default')
     plt.xlabel("Velocity [m/s]")
-    plt.ylabel("T and D [N]")
+    plt.ylabel("T and D [kN]")
     plt.grid(False)
     color=iter(plt.cm.rainbow(np.linspace(0,1,len(fc))))
     
     for i in np.arange(0, len(fc)):
         c = next(color)
-        plt.plot(V, [T_manobra[i]]*len(V), 'r')
-        plt.plot(V, D_manobra[i], color = c, label = 'n = {:.2f}'.format(fc[i]))
+        plt.plot(V, [j/1000 for j in [T_manobra[i]]*len(V)], 'r')
+        plt.plot(V, [j/1000 for j in D_manobra[i]], color = c, label = 'n = {:.2f}'.format(fc[i]))
     
     plt.legend(loc = 'best', framealpha = 1)
-    plt.text(200, 35000,"h = {:.1f} km".format(h[0]/1000))
-    plt.ylim(bottom = 0,top = 40000)
+    plt.text(180, 35,"h = {:.1f} km".format(h[0]/1000))
+    plt.ylim(bottom = 5, top = 40)
     plt.savefig('TD_vs_V_manobras.svg')
     plt.show()
     return

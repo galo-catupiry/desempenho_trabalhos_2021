@@ -90,8 +90,8 @@ def cruise_velocity_eq(x,h,n,T0):
     V = x[2]
     
     sigma = Atmosphere(h).density[0]/rho0
-    drag_polar = drag_object.polar()
     drag_object.Mp = V/Atmosphere(h).speed_of_sound[0]
+    drag_polar = drag_object.polar()
     Emax = np.sqrt(CD0/K)/(2*CD0)
     
     # Equations to be solved

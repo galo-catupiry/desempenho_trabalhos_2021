@@ -53,7 +53,11 @@ h = np.arange(0,14400,10).tolist()
 tol = 0.015
 #resp = v_asc.ceiling(h, T0, n, jet.W, V,tol)
 
+# Maxima razao de subida
 
+h_aux = [0]  # Nivel do Mar
+V_aux = np.linspace(0.01,320,500)
+[V_hdot_max, hdot_max] = v_asc.h_dot_max_solver(h_aux, jet.S, jet.W, T0, n, V_aux)
 
 # =============================================  
 # Graficos
@@ -62,7 +66,7 @@ fig2 = False
 fig3 = False
 fig4 = False
 fig5 = False
-fig6 = True
+fig6 = False
 fig7 = False
 tab = False
 

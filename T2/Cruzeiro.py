@@ -1,6 +1,5 @@
 """
 Análise de Voo em Cruzeiro - T2
-
 Integrantes:
     Abner Micael de Paula Souza - 10788676
     Alessandro Melo de Oliveira - 10788662
@@ -39,12 +38,10 @@ def total_drag(V,h):
     ----------
     V : Lista de velocidades definida em "MAIN".
     h : Lista de altitudes definida em "MAIN".
-
     Returns
     -------
     D_resp : Arrasto total em cruzeiro (lista)
     Dmin_resp : Arrasto mínimo em cruzeiro (lista)
-
     '''
     
     D_resp, Dmin_resp = [], []
@@ -71,18 +68,15 @@ def total_drag(V,h):
 
 def cruise_velocity_eq(x,h,n,T0):
     '''
-
     Parâmetros
     ----------
     x : Variável do sistema
     h : Altura analisada
     n: Coeficiente propulsivo
     T0: Empuxo dos quatro motores ao nível do mar
-
     Retorna
     -------
     equations : Lista de equações a serem resolvidas
-
     '''
     
     CD0 = x[0]
@@ -114,11 +108,9 @@ def cruise_velocity_solver(V,h,V_type,T0,n):
     T0: Empuxo dos quatro motores ao nível do mar
     n: Coeficiente propulsivo
     
-
     Returns
     -------
     Vresp : V1 ou V2 (lista, pois variam com h)
-
     '''
     
     Vresp = []
@@ -153,17 +145,14 @@ def cruise_velocity_solver(V,h,V_type,T0,n):
     
 def jet_buoyancy(h,T0,n):
     '''
-
     Parâmetros
     ----------
     h : Lista de altitudes definida em "MAIN".
     T0 : Empuxo dos quatro motores da aeronave ao nível do mar
     n: Coeficiente propulsivo
-
     Returns
     -------
     T : Lista de empuxo para cada altitude (h).
-
     '''
     
     T = []
@@ -179,7 +168,6 @@ def cruise_range(cond,W,c,zeta, V1, h1):
     ''' 
     Fornecidos os valores necessários, calcula-se o
     alcance para diferentes configurações:
-
     V1: Velocidade inicial de cruzeiro;
     h1: Altitude inicial de cruzeiro.    '''
 
@@ -210,6 +198,7 @@ def cruise_range(cond,W,c,zeta, V1, h1):
 
 def estol(W, S, h, CLmax):
 
+
     V_s_resp = []
 
     if(type(h) == np.ndarray or type(h) == list):
@@ -224,6 +213,12 @@ def estol(W, S, h, CLmax):
         V_s = (2*(W/S)/(Atmosphere(0).density[0]*sigma*CLmax))**(0.5)
         
         return V_s
+
+    sigma = Atmosphere(h).density[0]/Atmosphere(0).density[0]
+    V_s = (2*(W/S)/(Atmosphere(0).density[0]*sigma*CLmax))**(0.5)
+
+    return V_s
+
 
 # ============================================= 
 # Gráficos
@@ -263,6 +258,7 @@ def TD_vs_V(h,V,D_total,T, Dmin):
 
 def h_vs_V(h,V1,V2,Vs):
     
+
     V_som = Atmosphere(h).speed_of_sound
   
     h_plot = [i*3.28084 for i in h]
@@ -279,6 +275,7 @@ def h_vs_V(h,V1,V2,Vs):
     plt.legend(loc = 'best', framealpha = 1)
     plt.savefig('h_vs_V.svg')
     plt.show()
+
     return
 
 # Gerais:

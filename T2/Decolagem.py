@@ -17,8 +17,6 @@ import numpy as np
 
 from aircraft import JetStar
 from ambiance import Atmosphere
-#from Interpolacao import DragPolar
-
 
 # =============================================
 jet = JetStar('power approach')
@@ -43,7 +41,6 @@ def air_density(Temp, h):
     return rho
 
 def ground_acceleration(rho, V, W, gamma_pista=0, mi=0.04):
-    #L = 0.5*CLmax*jet.S*rho*V**2  
     L = 1.15*W  #usando as relações (16.16) do Ojha 
     D = 0.5*jet.CD*jet.S*rho*V**2
     T = T0*((rho/rho0)**n)

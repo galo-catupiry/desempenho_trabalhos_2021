@@ -17,8 +17,6 @@ import numpy as np
 
 from aircraft import JetStar
 from ambiance import Atmosphere
-#from Interpolacao import DragPolar
-
 
 # =============================================
 jet = JetStar('power approach')
@@ -35,8 +33,6 @@ c = 0.5/3600
 # =============================================
 
 
-#TODO: Usar Decolagem como biblioteca é melhor do q repetir a função? Muitas referencias cruzadas?
-# Ideia: Mandar as funções mais básicas (Empuxo, arrasto, air_density) para o aircraft.py
 def air_density(Temp, h):
     '''densidade fora da ISA; Temp em Celcius'''
     P=Atmosphere(h).pressure[0]
@@ -45,7 +41,6 @@ def air_density(Temp, h):
     return rho
 
 def approach_and_flare(rho, W_ap, V_S):
-    #L_f = 1.08*W_ap #Tomando aproximação (16.24-25) do Ojha
     V_ap = 1.3*V_S
     
     D = 0.5*jet.CD*jet.S*rho*V_ap**2

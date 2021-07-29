@@ -75,15 +75,6 @@ V_aux = np.linspace(0.01,320,500)
 [V_hdot_max, hdot_max] = v_asc.h_dot_max_solver(h_aux, jet.S, jet.W, T0, n, V_aux)
 
 # =============================================  
-# Graficos
-fig1 = False
-fig2 = False
-fig3 = False
-fig4 = False
-fig5 = False
-fig6 = False
-fig7 = False
-tab = False
 
 # Diagrama T,D vs. V
 
@@ -189,12 +180,12 @@ if(tab1):
         #Temp_list_deg = [str(T)+'ºC' for T in Temp_list]
         df = pd.DataFrame(initial_data,columns = [int(W_kg) for W_kg in W_list_kg], index= [str(T)+'ºC' for T in Temp_list])
         for W_kg in W_list_kg:     
-            W = W_kg*9.81
+            W = W_kg*g
             X_pista = []
             for Temp in Temp_list:    
 
                 rho = decolagem.air_density(Temp, h)
-                V_S = np.sqrt((2*W)/(CLmax*jet.S*rho))  #TODO: CLmax
+                V_S = np.sqrt((2*W)/(CLmax*jet.S*rho))  
                 
                 # Corrida de solo
                 x_G, V_Lo = decolagem.running(rho, V_S, W,  )
@@ -228,12 +219,12 @@ if(tab2):
     for h in h_list:
         df_la = pd.DataFrame(initial_data_la,columns = [int(W_kg) for W_kg in W_list_kg], index=Temp_list)
         for W_kg in W_list_kg:     
-            W_ap = W_kg*9.81
+            W_ap = W_kg*g
             X_pista_la = []
             for Temp in Temp_list:               
                 
                 rho = pouso.air_density(Temp, h)
-                V_S = np.sqrt((2*W_ap)/(CLmax*jet.S*rho))  #TODO: Rever: tomado CLmax_ap = CLmax 
+                V_S = np.sqrt((2*W_ap)/(CLmax*jet.S*rho))  
                 
                 x_f, x_ap  = pouso.approach_and_flare(rho, W_ap, V_S)
                 
